@@ -4,132 +4,85 @@ from game_model import *
 
 class GUI:
     pygame.init()
-    screen = pygame.display.set_mode((1280, 720))
+    screen = pygame.display.set_mode((1900, 1000))
     clock = pygame.time.Clock()
-    running = True
 
+    cards = [
+        Card(1, Suit.CLUBS, "Images/cardClubsA.png"),
+        Card(2, Suit.CLUBS, "Images/cardClubs2.png"),
+        Card(3, Suit.CLUBS, "Images/cardClubs3.png"),
+        Card(4, Suit.CLUBS, "Images/cardClubs4.png"),
+        Card(5, Suit.CLUBS, "Images/cardClubs5.png"),
+        Card(6, Suit.CLUBS, "Images/cardClubs6.png"),
+        Card(7, Suit.CLUBS, "Images/cardClubs7.png"),
+        Card(8, Suit.CLUBS, "Images/cardClubs8.png"),
+        Card(9, Suit.CLUBS, "Images/cardClubs9.png"),
+        Card(10, Suit.CLUBS, "Images/cardClubs10.png"),
+        Card(10, Suit.CLUBS, "Images/cardClubsJ.png"),
+        Card(10, Suit.CLUBS, "Images/cardClubsQ.png"),
+        Card(10, Suit.CLUBS, "Images/cardClubsK.png"),
+        Card(1, Suit.SPADES, "Images/cardSpadesA.png"),
+        Card(2, Suit.SPADES, "Images/cardSpades2.png"),
+        Card(3, Suit.SPADES, "Images/cardSpades3.png"),
+        Card(4, Suit.SPADES, "Images/cardSpades4.png"),
+        Card(5, Suit.SPADES, "Images/cardSpades5.png"),
+        Card(6, Suit.SPADES, "Images/cardSpades6.png"),
+        Card(7, Suit.SPADES, "Images/cardSpades7.png"),
+        Card(8, Suit.SPADES, "Images/cardSpades8.png"),
+        Card(9, Suit.SPADES, "Images/cardSpades9.png"),
+        Card(10, Suit.SPADES, "Images/cardSpades10.png"),
+        Card(10, Suit.SPADES, "Images/cardSpadesJ.png"),
+        Card(10, Suit.SPADES, "Images/cardSpadesQ.png"),
+        Card(10, Suit.SPADES, "Images/cardSpadesK.png"),
+        Card(1, Suit.HEARTS, "Images/cardHeartsA.png"),
+        Card(2, Suit.HEARTS, "Images/cardHearts2.png"),
+        Card(3, Suit.HEARTS, "Images/cardHearts3.png"),
+        Card(4, Suit.HEARTS, "Images/cardHearts4.png"),
+        Card(5, Suit.HEARTS, "Images/cardHearts5.png"),
+        Card(6, Suit.HEARTS, "Images/cardHearts6.png"),
+        Card(7, Suit.HEARTS, "Images/cardHearts7.png"),
+        Card(8, Suit.HEARTS, "Images/cardHearts8.png"),
+        Card(9, Suit.HEARTS, "Images/cardHearts9.png"),
+        Card(10, Suit.HEARTS, "Images/cardHearts10.png"),
+        Card(10, Suit.HEARTS, "Images/cardHeartsJ.png"),
+        Card(10, Suit.HEARTS, "Images/cardHeartsQ.png"),
+        Card(10, Suit.HEARTS, "Images/cardHeartsK.png"),
+        Card(1, Suit.DIAMONDS, "Images/cardDiamondsA.png"),
+        Card(2, Suit.DIAMONDS, "Images/cardDiamonds2.png"),
+        Card(3, Suit.DIAMONDS, "Images/cardDiamonds3.png"),
+        Card(4, Suit.DIAMONDS, "Images/cardDiamonds4.png"),
+        Card(5, Suit.DIAMONDS, "Images/cardDiamonds5.png"),
+        Card(6, Suit.DIAMONDS, "Images/cardDiamonds6.png"),
+        Card(7, Suit.DIAMONDS, "Images/cardDiamonds7.png"),
+        Card(8, Suit.DIAMONDS, "Images/cardDiamonds8.png"),
+        Card(9, Suit.DIAMONDS, "Images/cardDiamonds9.png"),
+        Card(10, Suit.DIAMONDS, "Images/cardDiamonds10.png"),
+        Card(10, Suit.DIAMONDS, "Images/cardDiamondsJ.png"),
+        Card(10, Suit.DIAMONDS, "Images/cardDiamondsQ.png"),
+        Card(10, Suit.DIAMONDS, "Images/cardDiamondsK.png"),
+    ]
+
+    running = True
     while running:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        screen.fill("dark green")
+        screen.fill((0, 128, 0))
+        card_width = (1900 - 50) // 13 - 10
+        card_height = (1000 - 150) // 4 - 10
+        columns = 13
+        rows = 4
+
+        for row in range(rows):
+            for col in range(columns):
+                index = row * columns + col
+                if index < len(cards):
+                    card = cards[index]
+                    card.rect.topleft = (50 + col * (card_width + 10), 150 + row * (card_height + 10))
+                    screen.blit(card.front_image, card.rect.topleft)
 
         pygame.display.flip()
-
         clock.tick(60)
-
-    # Creating each card and setting their respective images
-    AceClub = Card(1, Suit.CLUBS)
-    AceClub.load_image("Images/cardClubsA.png")
-    TwoClub = Card(2, Suit.CLUBS)
-    TwoClub.load_image("Images/cardClubs2.png")
-    ThreeClub = Card(3, Suit.CLUBS)
-    ThreeClub.load_image("Images/cardClubs3.png")
-    FourClub = Card(4, Suit.CLUBS)
-    FourClub.load_image("Images/cardClubs4.png")
-    FiveClub = Card(5, Suit.CLUBS)
-    FiveClub.load_image("Images/cardClubs5.png")
-    SixClub = Card(6, Suit.CLUBS)
-    SixClub.load_image("Images/cardClubs6.png")
-    SevenClub = Card(7, Suit.CLUBS)
-    SevenClub.load_image("Images/cardClubs7.png")
-    EightClub = Card(8, Suit.CLUBS)
-    EightClub.load_image("Images/cardClubs8.png")
-    NineClub = Card(9, Suit.CLUBS)
-    NineClub.load_image("Images/cardClubs9.png")
-    TenClub = Card(10, Suit.CLUBS)
-    TenClub.load_image("Images/cardClubs10.png")
-    JackClub = Card(10, Suit.CLUBS)
-    JackClub.load_image("Images/cardClubsJ.png")
-    QueenClub = Card(10, Suit.CLUBS)
-    QueenClub.load_image("Images/cardClubsQ.png")
-    KingClub = Card(10, Suit.CLUBS)
-    KingClub.load_image("Images/cardClubsK.png")
-
-    AceDiamonds = Card(1, Suit.DIAMONDS)
-    AceDiamonds.load_image("Images/cardDiamondsA.png")
-    TwoDiamonds = Card(2, Suit.DIAMONDS)
-    TwoDiamonds.load_image("Images/cardDiamonds2.png")
-    ThreeDiamonds = Card(3, Suit.DIAMONDS)
-    ThreeDiamonds.load_image("Images/cardDiamonds3.png")
-    FourDiamonds = Card(4, Suit.DIAMONDS)
-    FourDiamonds.load_image("Images/cardDiamonds4.png")
-    FiveDiamonds = Card(5, Suit.DIAMONDS)
-    FiveDiamonds.load_image("Images/cardDiamonds5.png")
-    SixDiamonds = Card(6, Suit.DIAMONDS)
-    SixDiamonds.load_image("Images/cardDiamonds6.png")
-    SevenDiamonds = Card(7, Suit.DIAMONDS)
-    SevenDiamonds.load_image("Images/cardDiamonds7.png")
-    EightDiamonds = Card(8, Suit.DIAMONDS)
-    EightDiamonds.load_image("Images/cardDiamonds8.png")
-    NineDiamonds = Card(9, Suit.DIAMONDS)
-    NineDiamonds.load_image("Images/cardDiamonds9.png")
-    TenDiamonds = Card(10, Suit.DIAMONDS)
-    TenDiamonds.load_image("Images/cardDiamonds10.png")
-    JackDiamonds = Card(10, Suit.DIAMONDS)
-    JackDiamonds.load_image("Images/cardDiamondsJ.png")
-    QueenDiamonds = Card(10, Suit.DIAMONDS)
-    QueenDiamonds.load_image("Images/cardDiamondsQ.png")
-    KingDiamonds = Card(10, Suit.DIAMONDS)
-    KingDiamonds.load_image("Images/cardDiamondsK.png")
-
-    AceHearts = Card(1, Suit.HEARTS)
-    AceHearts.load_image("Images/cardHeartsA.png")
-    TwoHearts = Card(2, Suit.HEARTS)
-    TwoHearts.load_image("Images/cardHearts2.png")
-    ThreeHearts = Card(3, Suit.HEARTS)
-    ThreeHearts.load_image("Images/cardHearts3.png")
-    FourHearts = Card(4, Suit.HEARTS)
-    FourHearts.load_image("Images/cardHearts4.png")
-    FiveHearts = Card(5, Suit.HEARTS)
-    FiveHearts.load_image("Images/cardHearts5.png")
-    SixHearts = Card(6, Suit.HEARTS)
-    SixHearts.load_image("Images/cardHearts6.png")
-    SevenHearts = Card(7, Suit.HEARTS)
-    SevenHearts.load_image("Images/cardHearts7.png")
-    EightHearts = Card(8, Suit.HEARTS)
-    EightHearts.load_image("Images/cardHearts8.png")
-    NineHearts = Card(9, Suit.HEARTS)
-    NineHearts.load_image("Images/cardHearts9.png")
-    TenHearts = Card(10, Suit.HEARTS)
-    TenHearts.load_image("Images/cardHearts10.png")
-    JackHearts = Card(10, Suit.HEARTS)
-    JackHearts.load_image("Images/cardHeartsJ.png")
-    QueenHearts = Card(10, Suit.HEARTS)
-    QueenHearts.load_image("Images/cardHeartsQ.png")
-    KingHearts = Card(10, Suit.HEARTS)
-    KingHearts.load_image("Images/cardHeartsK.png")
-
-    AceSpades = Card(1, Suit.SPADES)
-    AceSpades.load_image("Images/cardSpadesA.png")
-    TwoSpades = Card(2, Suit.SPADES)
-    TwoSpades.load_image("Images/cardSpades2.png")
-    ThreeSpades = Card(3, Suit.SPADES)
-    ThreeSpades.load_image("Images/cardSpades3.png")
-    FourSpades = Card(4, Suit.SPADES)
-    FourSpades.load_image("Images/cardSpades4.png")
-    FiveSpades = Card(5, Suit.SPADES)
-    FiveSpades.load_image("Images/cardSpades5.png")
-    SixSpades = Card(6, Suit.SPADES)
-    SixSpades.load_image("Images/cardSpades6.png")
-    SevenSpades = Card(7, Suit.SPADES)
-    SevenSpades.load_image("Images/cardSpades7.png")
-    EightSpades = Card(8, Suit.SPADES)
-    EightSpades.load_image("Images/cardSpades8.png")
-    NineSpades = Card(9, Suit.SPADES)
-    NineSpades.load_image("Images/cardSpades9.png")
-    TenSpades = Card(10, Suit.SPADES)
-    TenSpades.load_image("Images/cardSpades10.png")
-    JackSpades = Card(10, Suit.SPADES)
-    JackSpades.load_image("Images/cardSpadesJ.png")
-    QueenSpades = Card(10, Suit.SPADES)
-    QueenSpades.load_image("Images/cardSpadesQ.png")
-    KingSpades = Card(10, Suit.SPADES)
-    KingSpades.load_image("Images/cardSpadesK.png")
-
-
-    screen.blit(TenSpades.front_image, (50 * 2, 50))
-
 
