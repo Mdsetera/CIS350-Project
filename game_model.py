@@ -13,6 +13,9 @@ import copy
 #import pygame as pg
 from enum import Enum
 
+import pygame
+
+
 class Suit(Enum):
 #determines the suit of each card
     HEARTS = 1
@@ -62,11 +65,15 @@ class Deck:
         return my_str
 
 class Card:
-    def __init__(self, val: int, suit: Suit, fImage = None):
-        self.front_image = fImage
-        self.back_image = None
+    def __init__(self, val: int, suit: Suit):
         self.suit = suit
         self.value = val
+        self.front_image = None
+        self.back_image = None
+
+    def load_image(self, image_path):
+        self.front_image = pygame.image.load(image_path)
+        self.back_image = pygame.image.load("Images/cardBack_red5.png")
     def __repr__(self):
         return f'{self.value},{self.suit}'
 
