@@ -90,7 +90,7 @@ class Player:
         """
         player bet an amount of their chips,
         check is the same as betting 0 chips
-        you can only bet as much as at least one players has
+        you can only bet as much as at least one player has
         """
         return False
     def fold(self):
