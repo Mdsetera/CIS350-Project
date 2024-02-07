@@ -1,4 +1,4 @@
-*make sure you write an exception for if you are sent more than six cards*
+*make sure you write an exception for if you are sent more than seven cards*
 
 Royal/Stragiht Flush: straight (decending order) -> rest of cards (decending order)
 Four of a Kind: four of a kind -> rest of cards (decending order)
