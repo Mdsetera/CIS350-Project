@@ -54,10 +54,10 @@ class Deck:
     def populate(self):
         #populates all cards into the deck, only used in __init__
         for x in range(2,15):
-            self.stack.append(Card(x,Suit.HEARTS))
-            self.stack.append(Card(x,Suit.DIAMONDS))
-            self.stack.append(Card(x,Suit.SPADES))
-            self.stack.append(Card(x,Suit.CLUBS))
+            self.stack.append(Card(x,Suit.HEARTS, "Images/card" + "Hearts" + str(x) + ".png"))
+            self.stack.append(Card(x,Suit.DIAMONDS, "Images/card" + "Diamonds" + str(x) + ".png"))
+            self.stack.append(Card(x,Suit.SPADES, "Images/card" + "Spades" + str(x) + ".png"))
+            self.stack.append(Card(x,Suit.CLUBS, "Images/card" + "Clubs" + str(x) + ".png"))
     def __repr__(self):
         my_str = ""
         for card in self.stack:
