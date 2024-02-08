@@ -24,21 +24,23 @@ class Suit(Enum):
     CLUBS = 4
 
 class Game:
-    def __init__(self, num_AI_players = 1):
+    def __init__(self, num_User_players = 3, num_AI_players = 0):
         self.deck = Deck()
         self.seat = []
         self.pot = 0
         self.highest_bet = 0
         self.blind_amount = 50
-        self.blind_seat = 1
+        self.dealer_seat = 0
+        for x in range(num_User_players):
+            self.seat.append(UserPlayer())
         for x in range(num_AI_players):
-            print("Eat shit")
+            self.seat.append(AIPlayer())
 
 class Deck:
     def __init__(self):
         self.stack = []
         self.populate()
-        self.shuffle()
+        #self.shuffle()
 
     def shuffle(self):
         #shuffle current cards in the deck
@@ -73,7 +75,7 @@ class Card:
         self.rect = self.front_image.get_rect()
 
     def __repr__(self):
-        return f'{self.value},{self.suit}'
+        return f'{self.value},{self.suit},'
 
 class Player:
     def __init__(self):
@@ -81,6 +83,7 @@ class Player:
         self.chips = 1000
         self.hand_rank = None
         self.best_card = None
+        self.bet = 0
     def play(self) -> bool :
         """
         Will control each turn that the player takes
