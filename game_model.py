@@ -40,7 +40,7 @@ class Deck:
     def __init__(self):
         self.stack = []
         self.populate()
-        #self.shuffle()
+        self.shuffle()
 
     def shuffle(self):
         #shuffle current cards in the deck
@@ -73,6 +73,8 @@ class Card:
         self.front_image = pygame.image.load(image_path)
         self.back_image = pygame.image.load("Images/cardBack_red5.png")
         self.rect = self.front_image.get_rect()
+        self.width = self.rect.width
+        self.height = self.rect.height
 
     def __repr__(self):
         return f'{self.value},{self.suit},'

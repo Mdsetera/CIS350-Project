@@ -2,37 +2,46 @@ import pygame
 from game_model import *
 
 
-class GUI:
-    pygame.init()
-    window_start_Width = 700
-    window_start_Height = 700
-    screen = pygame.display.set_mode((window_start_Width, window_start_Height))
-    clock = pygame.time.Clock()
 
-    running = True
-    while running:
+pygame.init()
+window_start_Width = 700
+window_start_Height = 700
+screen = pygame.display.set_mode((window_start_Width, window_start_Height), pygame.RESIZABLE)
+pygame.display.set_caption("Texas Hold'Em!")
+clock = pygame.time.Clock()
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-        screen.fill((0, 128, 0))
+game = Game()
 
 
-"""
-        # columns = 13
-        rows = 4
+def change_dimensions(new_Width, new_Height):
+    global window_start_Width, window_start_Height
 
-        for row in range(rows):
-            for col in range(columns):
-                index = row * columns + col
-                if index < len(cards):
-                    card = cards[index]
-                    card.rect.topleft = (50 + col * (card_width + 10), 150 + row * (card_height + 10))
-                    screen.blit(card.front_image, card.rect.topleft)
-"""
+    x_scale = new_Width / window_start_Width
+    y_scale = new_Height / window_start_Height
+
+    window_start_Width = new_Width
+    window_start_Height = new_Height
+
+    for player in game.seat:
+        for card in player.hand:
+            card.rect.width = int(card.rect.width * x_scale)
+            card.rect.height = int(card.rect.height * y_scale)
 
 
-        pygame.display.flip()
-        clock.tick(60)
+
+running = True
+while running:
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.VIDEORESIZE:
+            screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+            change_dimensions(event.w, event.h)
+
+    screen.fill((0, 128, 0))
+
+    pygame.display.flip()
+
+    clock.tick(60)
 
