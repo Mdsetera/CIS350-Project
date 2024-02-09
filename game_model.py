@@ -27,14 +27,64 @@ class Game:
     def __init__(self, num_User_players = 3, num_AI_players = 0):
         self.deck = Deck()
         self.seat = []
-        self.pot = 0
+        self.pot = []
         self.highest_bet = 0
-        self.blind_amount = 50
+        self.sml_blind = 10
+        self.big_blind = 20
+
         self.dealer_seat = 0
-        for x in range(num_User_players):
+
+        for x in range(num_User_players):#add user players
             self.seat.append(UserPlayer())
-        for x in range(num_AI_players):
+        for x in range(num_AI_players):#add AI players
             self.seat.append(AIPlayer())
+
+        ##everyone is now seated at the table
+
+
+        self.round = 0 ##blind amount should increase every five founds
+        while(self.checkEndGame()==False):
+            self.round += 1
+
+            active_players = [] #players participating in the current hand
+            for player in self.seat:
+                if player.chips > 0:
+                    active_players.append(player)
+
+            ##deal initial cards to all active players
+            #(optional)add deal animation here
+            for x in range(2):
+                for player in active_players:
+                    player.hand.append(self.deck.stack[0])
+                    self.deck.stack.pop(0)
+
+
+            ##first round of bets
+
+            ##second round of bets
+
+
+    @property
+    def dealer_seat(self):
+        return self._dealer_seat
+    @dealer_seat.setter
+    def dealer_seat(self, num):
+        if num == len(self.seat):
+            self._dealer_seat = 0
+        elif num < 0:
+            raise ValueError('dealer seat cannot be < 0')
+        elif num > len(self.seat):
+            raise ValueError('invalid dealer seat')
+        else:
+            self._dealer_seat = num
+    def checkEndGame(self) -> bool:
+        #checks all players chip count,
+        x = 0
+        for player in self.seat:
+            if player.chips > 0:
+                x += 1
+        if x == 0:
+            raise ValueError('at least one player must have chips')
 
 class Deck:
     def __init__(self):
@@ -84,28 +134,42 @@ class Player:
         self.hand = []
         self.chips = 1000
         self.hand_rank = None
-        self.best_card = None
         self.bet = 0
-    def play(self) -> bool :
+        self.pot_eligibility = 0
+        self.winnings = 0
+        self.all_in = False
+    @property
+    def chips(self):
+        return self._chips
+
+    @chips.setter
+    def chips(self, num):
+        if num < 0:
+            raise ValueError('chip count cannot be < 0')
+        elif num % 5 != 0:
+            raise ValueError('chip count must be a multiple of 5')
+        else:
+            self._chips = num
+    def _play(self) -> bool :
         """
         Will control each turn that the player takes
         """
         return False
-    def bet(self, amount:int):
+    def _bet(self, amount:int):
         """
-        player bet an amount of their chips,
-        check is the same as betting 0 chips
-        you can only bet as much as at least one player has
+        player bets an amount of their chips,
+        you must bet at least double the big blind, if you do not have enough chips then call()
+        if you are in the lead, the highest amount you can bet is as much as the next highest player
         """
         return False
-    def fold(self):
+    def _fold(self):
         """
-        player ends involvement in the round and forfeits bets to the pot
+        player ends involvement in the round and forfeits eligibility to the pot
         """
-    def call(self):
+    def _call(self):
         """
         player matches the highest bet on the table
-        if highest bet is more than player has, player calls with all their chips
+        if highest bet is more than player has, player calls with all their chips and goes 'all-in'
         """
     def check_hand_rank(self, hand:list[Card]) -> None:
         """

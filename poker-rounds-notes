@@ -1,0 +1,13 @@
+General:
+-dealer starts at seat 0, small blind at seat 1 and big blind at seat 2
+-hands continue until only one player has chips (self.checkEndGame)
+-blinds increase every five rounds
+-the amount of winnings a player is eligible for is based on how much they are able to bet
+if a player goes "all in", they are only eligible for the amount they bet, and the amount that other players match
+any bets over what that player bet, they are not eligible for
+
+First round of Betting:
+-all bets must be a multiple of five (easier math)
+-play starts to the left of the big blind
+-raises must be at least double the big blind
+
