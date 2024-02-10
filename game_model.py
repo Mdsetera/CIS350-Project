@@ -27,6 +27,7 @@ class Game:
     def __init__(self, num_User_players = 3, num_AI_players = 0):
         self.deck = Deck()
         self.seat = []
+        self.active_players = []
         self.pot = []
         self.highest_bet = 0
         self.sml_blind = 10
@@ -46,24 +47,77 @@ class Game:
         while(self.checkEndGame()==False):
             self.round += 1
 
-            active_players = [] #players participating in the current hand
             for player in self.seat:
                 if player.chips > 0:
-                    active_players.append(player)
+                    self.active_players.append(player)
 
             ##deal initial cards to all active players
             #(optional)add deal animation here
             for x in range(2):
-                for player in active_players:
+                for player in self.active_players:
                     player.hand.append(self.deck.stack[0])
                     self.deck.stack.pop(0)
 
 
             ##first round of bets
 
+            ##starts with the blinds
+            seat_turn = self.dealer_seat + 1
+            if seat_turn >= len(self.seat): seat_turn = 0
+            current_player = self.seat[seat_turn]
+
+            if current_player in self.active_players:
+                if len(self.active_players) == 2:
+                    ##just do big blind
+                    if current_player.chips < self.big_blind:
+                        current_player.bet = current_player.chips
+                        current_player.all_in = True
+                        self.highest_bet = current_player.bet
+                else:
+                    #do small and big blind
+                    #small
+                    if current_player.chips < self.sml_blind:
+                        current_player.bet = current_player.chips
+                        current_player.all_in = True
+                        self.highest_bet = current_player.bet
+                    else:
+                        current_player.bet = self.sml_blind
+                    current_player.chips -= current_player.bet
+
+                    #switch current player
+                    current_player = self.next_player(current_player)
+
+                    #big
+                    if current_player.chips < self.big_blind:
+                        current_player.bet = current_player.chips
+                        current_player.all_in = True
+                    else:
+                        current_player.bet = self.big_blind
+                    current_player.chips -= current_player.bet
+                    if current_player.bet > self.highest_bet:
+                        self.highest_bet = current_player.bet
+
+            while (not self.equal_bets()):
+                current_player._play()#FIX ME: need to recieve player input
+
+
+
             ##second round of bets
 
-
+    def next_player(self, current_player):
+        #returns the player whos turn is next
+        index = self.active_players.index(current_player)
+        if index == len(self.active_players) - 1:
+            current_player = self.active_players[0]
+        else:
+            current_player = self.active_players[index + 1]
+        return current_player
+    def equal_bets(self):
+        #sent a list of players, returns True if all bets are equal to the highest bet
+        for player in self.active_players:
+            if player.bet != self.highest_bet and (player.all_in == False):
+                    return False
+        return True
     @property
     def dealer_seat(self):
         return self._dealer_seat
@@ -85,7 +139,9 @@ class Game:
                 x += 1
         if x == 0:
             raise ValueError('at least one player must have chips')
-
+        elif x == 1:
+            return True
+        return False
 class Deck:
     def __init__(self):
         self.stack = []
@@ -150,27 +206,55 @@ class Player:
             raise ValueError('chip count must be a multiple of 5')
         else:
             self._chips = num
-    def _play(self) -> bool :
+    def _play(self, game:Game) -> bool :
         """
         Will control each turn that the player takes
+        player input = {0:_fold, 1:_call, 2:_bet}
         """
         return False
-    def _bet(self, amount:int):
+    def _bet(self, game:Game, amount:int):
         """
         player bets an amount of their chips,
         you must bet at least double the big blind, if you do not have enough chips then call()
         if you are in the lead, the highest amount you can bet is as much as the next highest player
         """
+        if amount > self.chips:
+            raise ValueError('player cannot bet more than you have')
+        elif amount < 0:
+            raise ValueError('player cannot bet less than 0')
+        elif (self.bet + self.chips) < self.get_bet_range(game)[0]:#player cannot bet if they cannot match highest bet
+            raise ValueError('player cannot meet minimum bet amount')
+        else:
+            self.bet += amount
+            self.chips -= amount
+
         return False
-    def _fold(self):
+    def get_bet_range(self, game:Game) -> (int,int):
+        highest_chip_count = 0
+        second_highest_chip_count = 0
+        for player in game.active_players:
+            if player.chips > highest_chip_count:
+                second_highest_chip_count = highest_chip_count
+                highest_chip_count = player.chips
+        max_bet = 0
+        if self.chips == highest_chip_count:
+            max_bet = second_highest_chip_count
+        else:
+            max_bet = self.chips
+
+        min_bet = game.highest_bet + game.big_blind
+
+        return min_bet, max_bet
+    def _fold(self, game:Game):
         """
         player ends involvement in the round and forfeits eligibility to the pot
         """
-    def _call(self):
+    def _call(self, game:Game):
         """
         player matches the highest bet on the table
         if highest bet is more than player has, player calls with all their chips and goes 'all-in'
         """
+
     def check_hand_rank(self, hand:list[Card]) -> None:
         """
         given a hand of cards, returns the type of hand
@@ -196,6 +280,7 @@ def main():
     deck = Deck()
     print(deck)
     print(len(deck.stack))
+
 
 if __name__ == '__main__':
     main()
