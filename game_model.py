@@ -26,6 +26,7 @@ class Suit(Enum):
 class Game:
     def __init__(self, num_User_players = 3, num_AI_players = 0):
         self.deck = Deck()
+        self.table_cards = []
         self.seat = []
         self.active_players = []
         self.pot = []
@@ -153,7 +154,7 @@ class Deck:
         new_deck = []
         num_cards = len(self.stack)
         while num_cards > 0:
-            x = random.randint(0,num_cards-1)
+            x = random.randint(0, num_cards-1)
             new_deck.append(self.stack[x])
             self.stack.pop(x)
             num_cards -= 1
