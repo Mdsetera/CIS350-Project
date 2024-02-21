@@ -31,30 +31,30 @@ def show_flop(game):
     if (game.pot != 0) and (game.next_player == game.active_players[0]):
         #once first round of betting is over  (so like preflop)
         flop_1 = game.table_cards[0]
-        flip_card1 = pygame.Rect(0, 0, card.width, card.height)
+        flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
         screen.blit(flop_1.front_image, flip_card1)
 
         flop_2 = game.table_cards[1]
-        flip_card2 = pygame.Rect(0, 0, card.width, card.height)
+        flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
         screen.blit(flop_2.front_image, flip_card2)
 
         flop_3 = game.table_cards[2]
-        flip_card3 = pygame.Rect(0, 0, card.width, card.height)
+        flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
         screen.blit(flop_3.front_image, flip_card3)
+
 
 def show_turn(game):
     if (game.pot != 0) and (game.next_player == game.active_players[0]):
         turn_card = game.table_cards[3]
-        flip_turn = pygame.Rect(0, 0, card.width, card.height)
+        flip_turn = pygame.Rect(0, 0, turn_card.width, turn_card.height)
         screen.blit(turn_card.front_image, flip_turn)
+
 
 def show_river(game):
     if (game.pot != 0) and (game.next_player == game.active_players[0]):
         river_card = game.table_cards[-1]
-        flip_river = pygame.Rect(0, 0, card.width, card.height)
+        flip_river = pygame.Rect(0, 0, river_card.width, river_card.height)
         screen.blit(river_card.front_image, flip_river)
-
-
 
 
 #Card Sizes & Position
