@@ -14,6 +14,10 @@ game = Game()
 
 
 def initial_deal(game):
+    #FIX ME: the game class already dealt the cards to each player
+    #so all this method should do is show each player holding two cards
+    #make sure the
+
     for player in game.active_players:
         while len(player.hand) < 2:
             card = random.choice(game.deck)

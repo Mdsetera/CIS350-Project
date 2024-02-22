@@ -112,7 +112,12 @@ class Game:
             for x in range(len(self.active_players)):
                 self.pot.append(0)
             self.update_pot()
-            ##second round of bets
+
+            ##second round of bets - The Flop
+            self.table_cards = [card for card in self.deck.stack[:3]]
+            for i in range(3): self.deck.stack.pop(i)
+            #show the flop
+
 
 
     def update_pot(self):
