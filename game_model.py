@@ -14,6 +14,7 @@ import copy
 from enum import Enum
 
 import pygame
+import poker_gui as gui
 
 
 class Suit(Enum):
@@ -36,28 +37,35 @@ class Game:
 
         self.dealer_seat = 0
 
+
         for x in range(num_User_players):#add user players
             self.seat.append(UserPlayer())
         for x in range(num_AI_players):#add AI players
             self.seat.append(AIPlayer())
+        for player in self.seat:
+            player.seat_number = self.seat.index(player)
 
         ##everyone is now seated at the table
 
 
-        self.round = 0 ##blind amount should increase every five founds
+        self.round = 0 ##blind amount should increase every five rounds
         while(self.checkEndGame()==False):
             self.round += 1
 
+            self.active_players.clear()
             for player in self.seat:
                 if player.chips > 0:
                     self.active_players.append(player)
 
             ##deal initial cards to all active players
-            #(optional)add deal animation here
+
             for x in range(2):
                 for player in self.active_players:
                     player.hand.append(self.deck.stack[0])
                     self.deck.stack.pop(0)
+
+            gui.initial_deal(self)#initial deal animation
+
 
 
             ##first round of bets
@@ -99,11 +107,38 @@ class Game:
                         self.highest_bet = current_player.bet
 
             while (not self.equal_bets()):
-                current_player._play()#FIX ME: need to recieve player input
+                current_player._play(self) #FIX ME: need to recieve player input
 
 
-
+            #add everything to the pot
+            for x in range(len(self.active_players)):
+                self.pot.append(0)
+            self.update_pot()
             ##second round of bets
+
+
+    def update_pot(self):
+        players_with_bets = [player for player in self.active_players if player.bet > 0]
+
+        while(len(players_with_bets) > 0):
+            #find lowest bet
+            lowest_bet = players_with_bets[0].bet
+            for player in players_with_bets:
+                if player.bet < lowest_bet:
+                    lowest_bet = player.bet
+
+            #add lowest bet to next pot eligibility
+            for player in players_with_bets:
+                self.pot[player.pot_eligibility] += lowest_bet
+                player.bet -= lowest_bet
+
+            #remove players with lowest bet
+            new_list = [player for player in players_with_bets if player.bet != 0]
+            players_with_bets = new_list
+
+            #increment pot eligibility
+            for player in players_with_bets:
+                player.pot_eligibility += 1
 
     def next_player(self, current_player):
         #returns the player whos turn is next
@@ -188,6 +223,7 @@ class Card:
 
 class Player:
     def __init__(self):
+        self.seat_number = -1
         self.hand = []
         self.chips = 1000
         self.hand_rank = None
@@ -210,9 +246,34 @@ class Player:
     def _play(self, game:Game) -> bool :
         """
         Will control each turn that the player takes
-        player input = {0:_fold, 1:_call, 2:_bet}
+        player input = {0:_fold, 1:_call, 2:_call, 3:_bet}
         """
+
+
+
         return False
+    def get_moves(self, game:Game) -> dict:
+        ##takes in game state
+        #returns a dictionary with the availble moves a player can take at the current moment
+        moves = {"fold": True, "check": False, "call": False, "bet": False}
+        if self.all_in: return {"fold": False, "check": False, "call": False, "bet": False}
+        if game.highest_bet > 0:
+            moves["check"] = False
+        else:
+            moves["check"] = True
+
+        if self.chips == 0:
+            moves["call"] = False
+        else:
+            moves["call"] = True
+
+        range = self.get_bet_range(game)
+        if range[0] > range[1]:
+            moves["bet"] = False
+        else:
+            moves["bet"] = True
+
+        return moves
     def _bet(self, game:Game, amount:int):
         """
         player bets an amount of their chips,
@@ -223,14 +284,20 @@ class Player:
             raise ValueError('player cannot bet more than you have')
         elif amount < 0:
             raise ValueError('player cannot bet less than 0')
-        elif (self.bet + self.chips) < self.get_bet_range(game)[0]:#player cannot bet if they cannot match highest bet
-            raise ValueError('player cannot meet minimum bet amount')
+        elif self.get_bet_range(game)[0] > self.get_bet_range(game)[1]:
+            return False #player cannot bet if they cannot match highest bet
         else:
             self.bet += amount
             self.chips -= amount
 
-        return False
+        return True
     def get_bet_range(self, game:Game) -> (int,int):
+        """
+        Used to get the min and max values that the current player can bet
+        if min_bet > max_bet, that means the current player cannot bet
+        :param game:
+        :return: (int, int)
+        """
         highest_chip_count = 0
         second_highest_chip_count = 0
         for player in game.active_players:
@@ -250,12 +317,24 @@ class Player:
         """
         player ends involvement in the round and forfeits eligibility to the pot
         """
+        game.pot[self.pot_eligibility] += self.bet
+        self.pot_eligibility = -1
+        game.active_players.remove(self)
     def _call(self, game:Game):
         """
         player matches the highest bet on the table
         if highest bet is more than player has, player calls with all their chips and goes 'all-in'
         """
-
+        if self.chips == 0:
+            raise ValueError('player does not have any chips to call')
+        elif (self.chips + self.bet) < game.highest_bet:
+            self.bet += self.chips
+            self.chips = 0
+            self.all_in = True
+        else:
+            self.chips += self.bet
+            self.bet = game.highest_bet
+            self.chips -= self.bet
     def check_hand_rank(self, hand:list[Card]) -> None:
         """
         given a hand of cards, returns the type of hand
@@ -264,18 +343,26 @@ class Player:
 class UserPlayer(Player):
     def __init__(self):
         super().__init__()
-    def play(self):
+    def _play(self, game):
         """
         controls the turn of a user
         """
+        """FIXME
+        show current players cards, hide everyone elses cards
+        in poker_gui, we need a method that calls player.get_moves(),
+        and returns the input players choses move
+        player input = {0:_fold, 1:_check, 2:_call, 3:_bet}
+        """
+        input = 1
+
 class AIPlayer(Player):
     def __init__(self):
         super().__init__()
-    def play(self):
+    def _play(self, game):
         """
         controls the turn of a AI player
         """
-
+        input = 0
 
 def main():
     deck = Deck()
