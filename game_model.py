@@ -37,7 +37,6 @@ class Game:
 
         self.dealer_seat = 0
 
-
         for x in range(num_User_players):#add user players
             self.seat.append(UserPlayer())
         for x in range(num_AI_players):#add AI players
@@ -52,7 +51,6 @@ class Game:
         while(self.checkEndGame()==False):
             self.round += 1
 
-            self.active_players.clear()
             for player in self.seat:
                 if player.chips > 0:
                     self.active_players.append(player)
@@ -148,6 +146,8 @@ class Game:
         else:
             current_player = self.active_players[index + 1]
         return current_player
+
+
     def equal_bets(self):
         #sent a list of players, returns True if all bets are equal to the highest bet
         for player in self.active_players:
@@ -223,7 +223,6 @@ class Card:
 
 class Player:
     def __init__(self):
-        self.seat_number = -1
         self.hand = []
         self.chips = 1000
         self.hand_rank = None
@@ -252,28 +251,6 @@ class Player:
 
 
         return False
-    def get_moves(self, game:Game) -> dict:
-        ##takes in game state
-        #returns a dictionary with the availble moves a player can take at the current moment
-        moves = {"fold": True, "check": False, "call": False, "bet": False}
-        if self.all_in: return {"fold": False, "check": False, "call": False, "bet": False}
-        if game.highest_bet > 0:
-            moves["check"] = False
-        else:
-            moves["check"] = True
-
-        if self.chips == 0:
-            moves["call"] = False
-        else:
-            moves["call"] = True
-
-        range = self.get_bet_range(game)
-        if range[0] > range[1]:
-            moves["bet"] = False
-        else:
-            moves["bet"] = True
-
-        return moves
     def _bet(self, game:Game, amount:int):
         """
         player bets an amount of their chips,
@@ -284,8 +261,8 @@ class Player:
             raise ValueError('player cannot bet more than you have')
         elif amount < 0:
             raise ValueError('player cannot bet less than 0')
-        elif self.get_bet_range(game)[0] > self.get_bet_range(game)[1]:
-            return False #player cannot bet if they cannot match highest bet
+        elif (self.bet + self.chips) < self.get_bet_range(game)[0]:#player cannot bet if they cannot match highest bet
+            raise ValueError('player cannot meet minimum bet amount')
         else:
             self.bet += amount
             self.chips -= amount
