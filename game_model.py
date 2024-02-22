@@ -62,7 +62,7 @@ class Game:
                     player.hand.append(self.deck.stack[0])
                     self.deck.stack.pop(0)
 
-            gui.initial_deal(self)#initial deal animation
+            gui.create_cards(self)#initial deal animation
 
 
 
@@ -113,10 +113,24 @@ class Game:
                 self.pot.append(0)
             self.update_pot()
 
+            #######################################
+
             ##second round of bets - The Flop
             self.table_cards = [card for card in self.deck.stack[:3]]
             for i in range(3): self.deck.stack.pop(i)
             #show the flop
+            gui.show_flop()
+
+            #The Turn
+            self.table_cards.append(self.deck.stack[0])
+            self.deck.stack.pop(0)
+            gui.show_turn(self)
+
+
+            #The Flop
+            self.table_cards.append(self.deck.stack[0])
+            self.deck.stack.pop(0)
+            gui.show_flop(self)
 
 
 
@@ -256,6 +270,29 @@ class Player:
 
 
         return False
+    def get_moves(self, game:Game):
+        ##takes in game state
+        #returns a dictionary with the availble moves a player can take at the current moment
+        moves = {"fold": True, "check": False, "call": False, "bet": False}
+        if self.all_in:
+                return {"fold": False, "check": False, "call": False, "bet": False}
+        if game.highest_bet > 0:
+            moves["check"] = False
+        else:
+            moves["check"] = True
+
+        if self.chips == 0:
+            moves["call"] = False
+        else:
+            moves["call"] = True
+
+        range = self.get_bet_range(game)
+        if range[0] > range[1]:
+            moves["bet"] = False
+        else:
+            moves["bet"] = True
+
+        return moves
     def _bet(self, game:Game, amount:int):
         """
         player bets an amount of their chips,
@@ -334,6 +371,7 @@ class UserPlayer(Player):
         in poker_gui, we need a method that calls player.get_moves(),
         and returns the input players choses move
         player input = {0:_fold, 1:_check, 2:_call, 3:_bet}
+        moves = {"fold": True, "check": False
         """
         input = 1
 
