@@ -101,8 +101,6 @@ class Game:
             while (not self.equal_bets()):
                 current_player._play()#FIX ME: need to recieve player input
 
-
-
             ##second round of bets
 
     def next_player(self, current_player):
@@ -113,6 +111,8 @@ class Game:
         else:
             current_player = self.active_players[index + 1]
         return current_player
+
+
     def equal_bets(self):
         #sent a list of players, returns True if all bets are equal to the highest bet
         for player in self.active_players:

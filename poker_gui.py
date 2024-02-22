@@ -20,6 +20,7 @@ def initial_deal(game):
             player.hand.append(card)
             game.deck.remove(card)
 
+    #randomly adds cards from the deck to the table card list (for flop)
     for i in range(5):
         card = random.choice(game.deck)
         game.table_cards.append(card)
@@ -32,30 +33,37 @@ def show_flop(game):
         #once first round of betting is over  (so like preflop)
         flop_1 = game.table_cards[0]
         flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
+        flip_card1.midbottom = (380, 325)
         screen.blit(flop_1.front_image, flip_card1)
 
         flop_2 = game.table_cards[1]
         flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
+        flip_card2.midbottom = (440, 325)
         screen.blit(flop_2.front_image, flip_card2)
 
         flop_3 = game.table_cards[2]
         flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
+        flip_card3.midbottom = (500, 325)
         screen.blit(flop_3.front_image, flip_card3)
+        pygame.display.flip()
 
 
 def show_turn(game):
     if (game.pot != 0) and (game.next_player == game.active_players[0]):
         turn_card = game.table_cards[3]
         flip_turn = pygame.Rect(0, 0, turn_card.width, turn_card.height)
+        flip_turn.midbottom = (560, 325)
         screen.blit(turn_card.front_image, flip_turn)
+        pygame.display.flip()
 
 
 def show_river(game):
     if (game.pot != 0) and (game.next_player == game.active_players[0]):
         river_card = game.table_cards[-1]
         flip_river = pygame.Rect(0, 0, river_card.width, river_card.height)
+        flip_river.midbottom = (620, 325)
         screen.blit(river_card.front_image, flip_river)
-
+        pygame.display.flip()
 
 #Card Sizes & Position
 
@@ -93,6 +101,7 @@ def create_cards():
                     player3_card2.bottomright = (1000, 370)
                     screen.blit(card.back_image, player3_card2)
 
+            pygame.display.flip()
 
 
 def change_dimensions(new_Width, new_Height):
@@ -111,6 +120,7 @@ def change_dimensions(new_Width, new_Height):
 
             card.front_image = pygame.transform.scale(card.front_image, card.width * x_scale, card.height * y_scale)
             card.back_image = pygame.transform.scale(card.back_image, card.width * x_scale, card.height * y_scale)
+            pygame.display.flip()
 
 
 running = True
@@ -124,10 +134,6 @@ while running:
             change_dimensions(event.w, event.h)
 
     screen.fill((0, 128, 0))
-
-    for player in game.active_players:
-        for card in player.hand:
-            screen.blit(card.front_image, card.rect)
 
     pygame.display.flip()
     clock.tick(60)
