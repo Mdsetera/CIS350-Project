@@ -52,16 +52,20 @@ class Game:
         while not self.check_end_game():
             self.round += 1
             self.start_round(self.screen)
+            self.deal_initial_cards()
+            self.take_first_round_bets()
+
+
 
     def start_round(self, screen):
+        ##deal the cards
         self.screen = screen
         self.active_players = [player for player in self.seat if player.chips > 0]
-        self.deal_initial_cards()
 
         #self.take_first_round_bets()
         #self.update_pot()
-        if self.round == 1:
-            self.take_bets(gui.show_flop, 3)
+        # if self.round == 1:
+        #     self.take_bets(gui.show_flop, 3)
         #elif self.round == 2:
             #self.take_bets(gui.show_turn, 1)
         #elif self.round == 3:
@@ -96,6 +100,9 @@ class Game:
                 self.handle_small_blind(current_player)
                 current_player = self.next_player(current_player)
                 self.handle_big_blind(current_player)
+        while (not self.equal_bets()):
+                current_player._play(self) #FIX ME: need to recieve player input
+        self.update_pot()
 
 
     def handle_small_blind(self, current_player):
@@ -106,6 +113,7 @@ class Game:
         else:
             current_player.bet = self.sml_blind
             current_player.chips -= current_player.bet
+
 
     def handle_big_blind(self, current_player):
         if current_player.chips < self.big_blind:
@@ -129,6 +137,8 @@ class Game:
         show_cards_function(self, screen)
 
     def update_pot(self):
+        for x in range(len(self.active_players)):
+            self.pot.append(0)
         players_with_bets = [player for player in self.active_players if player.bet > 0]
         while players_with_bets:
             lowest_bet = min(player.bet for player in players_with_bets)
@@ -261,8 +271,10 @@ class Player:
     def _play(self, game:Game) -> bool :
         """
         Will control each turn that the player takes
-        player input = {0:_fold, 1:_call, 2:_call, 3:_bet}
+        player input = {"fold":_fold, "check":_call, "call":_call, "bet":_bet}
         """
+        #get the input
+
         return False
 
     def get_moves(self, game:Game):
@@ -305,6 +317,10 @@ class Player:
             self.chips -= amount
 
         return True
+    def _can_bet(self, game:Game)->bool:
+        """FIXME"""
+        return False
+
     def get_bet_range(self, game:Game) -> (int,int):
         """
         Used to get the min and max values that the current player can bet

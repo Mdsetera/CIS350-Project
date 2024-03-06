@@ -24,23 +24,12 @@ def main():
                 gui.redraw_screen(game, screen, clock)
                 gui.create_cards(game, screen)
 
-        if game.round == 0:
-            print('shitter')
-            game.start_round(screen)
+        while not game.check_end_game():
+            game.round += 1
+            game.start_round(game.screen)
+            game.deal_initial_cards()
             game.take_first_round_bets()
-            game.update_pot()
 
-        elif game.round == 1:
-            game.take_bets(gui.show_flop, 3)
-            game.round += 1
-
-        elif game.round == 2:
-            game.take_bets(gui.show_turn, 1)
-            game.round += 1
-
-        elif game.round == 3:
-            game.take_bets(gui.show_river, 1)
-            game.round += 1
 
         fold_button.draw(screen)
         pygame.display.flip()
