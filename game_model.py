@@ -10,6 +10,7 @@ game. Features include a functional GUI, AI Players, and a tournament mode.
 """
 import random
 import copy
+#import pygame as pg
 from enum import Enum
 
 import pygame
@@ -133,20 +134,24 @@ class Game:
             lowest_bet = min(player.bet for player in players_with_bets)
 
             for player in players_with_bets:
-                pot_eligibility = player.pot_eligibility
+                if player.bet < lowest_bet:
+                    lowest_bet = player.bet
 
-                while len(self.pot) <= pot_eligibility:
-                    self.pot.append(0)
-
-                self.pot[pot_eligibility] += lowest_bet
+            #add lowest bet to next pot eligibility
+            for player in players_with_bets:
+                self.pot[player.pot_eligibility] += lowest_bet
                 player.bet -= lowest_bet
 
-            players_with_bets = [player for player in players_with_bets if player.bet != 0]
+            #remove players with lowest bet
+            new_list = [player for player in players_with_bets if player.bet != 0]
+            players_with_bets = new_list
 
+            #increment pot eligibility
             for player in players_with_bets:
                 player.pot_eligibility += 1
 
     def next_player(self, current_player):
+        #returns the player whos turn is next
         index = self.active_players.index(current_player)
         if index == len(self.active_players) - 1:
             return self.active_players[0]
@@ -200,7 +205,7 @@ class Deck:
             self.stack.pop(x)
             num_cards -= 1
         self.stack = new_deck
-        print(f"Shuffled deck: {self.stack}")
+        print(f"Shuffled deck: {self.__repr__}")
 
     def populate(self):
         #populates all cards into the deck, only used in __init__
@@ -209,7 +214,6 @@ class Deck:
             self.stack.append(Card(x,Suit.DIAMONDS, "Images/card" + "Diamonds" + str(x) + ".png"))
             self.stack.append(Card(x,Suit.SPADES, "Images/card" + "Spades" + str(x) + ".png"))
             self.stack.append(Card(x,Suit.CLUBS, "Images/card" + "Clubs" + str(x) + ".png"))
-        print(f"Populated deck: {self.stack}")
     def __repr__(self):
         my_str = ""
         for card in self.stack:
@@ -227,6 +231,9 @@ class Card:
         self.front_image = pygame.transform.scale(self.front_image, (self.width, self.height))
         self.back_image = pygame.transform.scale(self.back_image, (self.width, self.height))
         self.rect = self.front_image.get_rect()
+        self.width = self.rect.width
+        self.height = self.rect.height
+
     def __repr__(self):
         return f'{self.value},{self.suit},'
 
@@ -350,7 +357,7 @@ class Player:
 class UserPlayer(Player):
     def __init__(self):
         super().__init__()
-    def _play(self, game):
+    def _get_input(self, game):
         """
         controls the turn of a user
         """
@@ -361,11 +368,13 @@ class UserPlayer(Player):
         player input = {0:_fold, 1:_check, 2:_call, 3:_bet}
         moves = {"fold": True, "check": False
         """
+        input = 1
+        return input
 
 class AIPlayer(Player):
     def __init__(self):
         super().__init__()
-    def _play(self, game):
+    def _get_input(self, game):
         """
         controls the turn of a AI player
         """
