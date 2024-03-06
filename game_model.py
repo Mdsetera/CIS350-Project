@@ -10,7 +10,6 @@ game. Features include a functional GUI, AI Players, and a tournament mode.
 """
 import random
 import copy
-#import pygame as pg
 from enum import Enum
 
 import pygame
@@ -36,6 +35,7 @@ class Game:
         self.big_blind = 20
 
         self.dealer_seat = 0
+        self.screen, self.clock = gui.init_pygame()
 
         for x in range(num_User_players):#add user players
             self.seat.append(UserPlayer())
@@ -48,130 +48,115 @@ class Game:
 
 
         self.round = 0 ##blind amount should increase every five rounds
-        while(self.checkEndGame()==False):
+        while not self.check_end_game():
             self.round += 1
+            self.start_round(self.screen)
 
-            for player in self.seat:
-                if player.chips > 0:
-                    self.active_players.append(player)
+    def start_round(self, screen):
+        self.screen = screen
+        self.active_players = [player for player in self.seat if player.chips > 0]
+        self.deal_initial_cards()
 
-            ##deal initial cards to all active players
+        #self.take_first_round_bets()
+        #self.update_pot()
+        if self.round == 1:
+            self.take_bets(gui.show_flop, 3)
+        #elif self.round == 2:
+            #self.take_bets(gui.show_turn, 1)
+        #elif self.round == 3:
+            #self.take_bets(gui.show_river, 1)
 
-            for x in range(2):
-                for player in self.active_players:
-                    player.hand.append(self.deck.stack[0])
-                    self.deck.stack.pop(0)
+    def deal_initial_cards(self):
+        if not self.table_cards:
+            for player in self.active_players:
+                for x in range(2):
+                    if not self.deck.stack:
+                        self.deck.populate()
+                        self.deck.shuffle()
+                    card = self.deck.stack.pop()
+                    player.hand.append(card)
+            for player in self.active_players:
+                print(player.hand)
 
-            gui.create_cards(self)#initial deal animation
+            for x in range(5):
+                card = self.deck.stack.pop()
+                self.table_cards.append(card)
 
+            gui.create_cards(self, self.screen)
+            print(self.table_cards)
 
-
-            ##first round of bets
-
-            ##starts with the blinds
-            seat_turn = self.dealer_seat + 1
-            if seat_turn >= len(self.seat): seat_turn = 0
-            current_player = self.seat[seat_turn]
-
-            if current_player in self.active_players:
-                if len(self.active_players) == 2:
-                    ##just do big blind
-                    if current_player.chips < self.big_blind:
-                        current_player.bet = current_player.chips
-                        current_player.all_in = True
-                        self.highest_bet = current_player.bet
-                else:
-                    #do small and big blind
-                    #small
-                    if current_player.chips < self.sml_blind:
-                        current_player.bet = current_player.chips
-                        current_player.all_in = True
-                        self.highest_bet = current_player.bet
-                    else:
-                        current_player.bet = self.sml_blind
-                    current_player.chips -= current_player.bet
-
-                    #switch current player
-                    current_player = self.next_player(current_player)
-
-                    #big
-                    if current_player.chips < self.big_blind:
-                        current_player.bet = current_player.chips
-                        current_player.all_in = True
-                    else:
-                        current_player.bet = self.big_blind
-                    current_player.chips -= current_player.bet
-                    if current_player.bet > self.highest_bet:
-                        self.highest_bet = current_player.bet
-
-            while (not self.equal_bets()):
-                current_player._play(self) #FIX ME: need to recieve player input
+    def take_first_round_bets(self):
+        player_turn = self.dealer_seat + 1 if self.dealer_seat + 1 < len(self.seat) else 0
+        current_player = self.seat[player_turn]
+        if current_player in self.active_players:
+            if len(self.active_players) == 2:
+                self.handle_big_blind(current_player)
+            else:
+                self.handle_small_blind(current_player)
+                current_player = self.next_player(current_player)
+                self.handle_big_blind(current_player)
 
 
-            #add everything to the pot
-            for x in range(len(self.active_players)):
-                self.pot.append(0)
-            self.update_pot()
+    def handle_small_blind(self, current_player):
+        if current_player.chips < self.sml_blind:
+            current_player.bet = current_player.chips
+            current_player.all_in = True
+            self.highest_bet = current_player.bet
+        else:
+            current_player.bet = self.sml_blind
+            current_player.chips -= current_player.bet
 
-            #######################################
-
-            ##second round of bets - The Flop
-            self.table_cards = [card for card in self.deck.stack[:3]]
-            for i in range(3): self.deck.stack.pop(i)
-            #show the flop
-            gui.show_flop()
-
-            #The Turn
-            self.table_cards.append(self.deck.stack[0])
-            self.deck.stack.pop(0)
-            gui.show_turn(self)
-
-
-            #The Flop
-            self.table_cards.append(self.deck.stack[0])
-            self.deck.stack.pop(0)
-            gui.show_flop(self)
+    def handle_big_blind(self, current_player):
+        if current_player.chips < self.big_blind:
+            current_player.bet = current_player.chips
+            current_player.all_in = True
+        else:
+            current_player.bet = self.big_blind
+            current_player.chips -= current_player.bet
+        if current_player.bet > self.highest_bet:
+            self.highest_bet = current_player.bet
 
 
+    def take_bets(self, show_cards_function, num_cards):
+        self.show_table_cards(num_cards, show_cards_function, self.screen)
+        self.update_pot()
+
+    def show_table_cards(self, num_cards, show_cards_function, screen):
+        #self.table_cards.extend(self.deck.stack[:num_cards])
+        #print(f"After extending: {self.table_cards}")
+        #self.deck.stack = self.deck.stack[num_cards:]
+        show_cards_function(self, screen)
 
     def update_pot(self):
         players_with_bets = [player for player in self.active_players if player.bet > 0]
+        while players_with_bets:
+            lowest_bet = min(player.bet for player in players_with_bets)
 
-        while(len(players_with_bets) > 0):
-            #find lowest bet
-            lowest_bet = players_with_bets[0].bet
             for player in players_with_bets:
-                if player.bet < lowest_bet:
-                    lowest_bet = player.bet
+                pot_eligibility = player.pot_eligibility
 
-            #add lowest bet to next pot eligibility
-            for player in players_with_bets:
-                self.pot[player.pot_eligibility] += lowest_bet
+                while len(self.pot) <= pot_eligibility:
+                    self.pot.append(0)
+
+                self.pot[pot_eligibility] += lowest_bet
                 player.bet -= lowest_bet
 
-            #remove players with lowest bet
-            new_list = [player for player in players_with_bets if player.bet != 0]
-            players_with_bets = new_list
+            players_with_bets = [player for player in players_with_bets if player.bet != 0]
 
-            #increment pot eligibility
             for player in players_with_bets:
                 player.pot_eligibility += 1
 
     def next_player(self, current_player):
-        #returns the player whos turn is next
         index = self.active_players.index(current_player)
         if index == len(self.active_players) - 1:
-            current_player = self.active_players[0]
-        else:
-            current_player = self.active_players[index + 1]
-        return current_player
-
+            return self.active_players[0]
+        return self.active_players[index + 1]
 
     def equal_bets(self):
         #sent a list of players, returns True if all bets are equal to the highest bet
         for player in self.active_players:
             if player.bet != self.highest_bet and (player.all_in == False):
-                    return False
+                return False
         return True
     @property
     def dealer_seat(self):
@@ -186,7 +171,7 @@ class Game:
             raise ValueError('invalid dealer seat')
         else:
             self._dealer_seat = num
-    def checkEndGame(self) -> bool:
+    def check_end_game(self) -> bool:
         #checks all players chip count,
         x = 0
         for player in self.seat:
@@ -196,7 +181,9 @@ class Game:
             raise ValueError('at least one player must have chips')
         elif x == 1:
             return True
-        return False
+        else:
+            return False
+
 class Deck:
     def __init__(self):
         self.stack = []
@@ -213,14 +200,16 @@ class Deck:
             self.stack.pop(x)
             num_cards -= 1
         self.stack = new_deck
+        print(f"Shuffled deck: {self.stack}")
 
     def populate(self):
         #populates all cards into the deck, only used in __init__
-        for x in range(2,15):
+        for x in range(2, 15):
             self.stack.append(Card(x,Suit.HEARTS, "Images/card" + "Hearts" + str(x) + ".png"))
             self.stack.append(Card(x,Suit.DIAMONDS, "Images/card" + "Diamonds" + str(x) + ".png"))
             self.stack.append(Card(x,Suit.SPADES, "Images/card" + "Spades" + str(x) + ".png"))
             self.stack.append(Card(x,Suit.CLUBS, "Images/card" + "Clubs" + str(x) + ".png"))
+        print(f"Populated deck: {self.stack}")
     def __repr__(self):
         my_str = ""
         for card in self.stack:
@@ -233,10 +222,11 @@ class Card:
         self.value = val
         self.front_image = pygame.image.load(image_path)
         self.back_image = pygame.image.load("Images/cardBack_red5.png")
+        self.width = self.front_image.get_width() * .8
+        self.height = self.front_image.get_height() * .8
+        self.front_image = pygame.transform.scale(self.front_image, (self.width, self.height))
+        self.back_image = pygame.transform.scale(self.back_image, (self.width, self.height))
         self.rect = self.front_image.get_rect()
-        self.width = self.rect.width
-        self.height = self.rect.height
-
     def __repr__(self):
         return f'{self.value},{self.suit},'
 
@@ -266,16 +256,14 @@ class Player:
         Will control each turn that the player takes
         player input = {0:_fold, 1:_call, 2:_call, 3:_bet}
         """
-
-
-
         return False
+
     def get_moves(self, game:Game):
         ##takes in game state
         #returns a dictionary with the availble moves a player can take at the current moment
         moves = {"fold": True, "check": False, "call": False, "bet": False}
         if self.all_in:
-                return {"fold": False, "check": False, "call": False, "bet": False}
+            return {"fold": False, "check": False, "call": False, "bet": False}
         if game.highest_bet > 0:
             moves["check"] = False
         else:
@@ -373,7 +361,6 @@ class UserPlayer(Player):
         player input = {0:_fold, 1:_check, 2:_call, 3:_bet}
         moves = {"fold": True, "check": False
         """
-        input = 1
 
 class AIPlayer(Player):
     def __init__(self):
@@ -383,7 +370,7 @@ class AIPlayer(Player):
         controls the turn of a AI player
         """
         input = 0
-
+'''
 def main():
     deck = Deck()
     print(deck)
@@ -392,3 +379,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+'''

@@ -1,39 +1,37 @@
 import pygame
-from game_model import *
 
-
-
-pygame.init()
 window_start_Width = 1000
 window_start_Height = 750
-screen = pygame.display.set_mode((window_start_Width, window_start_Height), pygame.RESIZABLE)
-pygame.display.set_caption("Texas Hold'Em!")
-clock = pygame.time.Clock()
-
-game = Game()
 
 
-def initial_deal(game):
-    #FIX ME: the game class already dealt the cards to each player
-    #so all this method should do is show each player holding two cards
-
-    for player in game.active_players:
-        while len(player.hand) < 2:
-            card = random.choice(game.deck)
-            player.hand.append(card)
-            game.deck.remove(card)
-
-    #randomly adds cards from the deck to the table card list (for flop)
-    for i in range(5):
-        card = random.choice(game.deck)
-        game.table_cards.append(card)
-        game.deck.remove(card)
-        i += 1
+def init_pygame():
+    pygame.init()
+    global window_start_Width, window_start_Height
+    screen = pygame.display.set_mode((window_start_Width, window_start_Height), pygame.RESIZABLE)
+    pygame.display.set_caption("Texas Hold'Em!")
+    clock = pygame.time.Clock()
+    return screen, clock
 
 
-def show_flop(game):
-    if (game.pot != 0) and (game.next_player == game.active_players[0]):
-        #once first round of betting is over  (so like preflop)
+def show_flop(game, screen):
+    #print(game.table_cards)
+    #once first round of betting is over  (so like preflop)
+    if game.round == 1:
+        flop_1 = game.table_cards[0]
+        flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
+        flip_card1.midbottom = (380, 325)
+        screen.blit(flop_1.back_image, flip_card1)
+
+        flop_2 = game.table_cards[1]
+        flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
+        flip_card2.midbottom = (440, 325)
+        screen.blit(flop_2.back_image, flip_card2)
+
+        flop_3 = game.table_cards[2]
+        flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
+        flip_card3.midbottom = (500, 325)
+        screen.blit(flop_3.back_image, flip_card3)
+    elif game.round == 2:
         flop_1 = game.table_cards[0]
         flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
         flip_card1.midbottom = (380, 325)
@@ -48,66 +46,77 @@ def show_flop(game):
         flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
         flip_card3.midbottom = (500, 325)
         screen.blit(flop_3.front_image, flip_card3)
-        pygame.display.flip()
 
 
-def show_turn(game):
-    if (game.pot != 0) and (game.next_player == game.active_players[0]):
-        turn_card = game.table_cards[3]
-        flip_turn = pygame.Rect(0, 0, turn_card.width, turn_card.height)
-        flip_turn.midbottom = (560, 325)
-        screen.blit(turn_card.front_image, flip_turn)
-        pygame.display.flip()
+
+def show_turn(game, screen):
+    turn_card = game.table_cards[3]
+    flip_turn = pygame.Rect(0, 0, turn_card.width, turn_card.height)
+    flip_turn.midbottom = (560, 325)
+    screen.blit(turn_card.front_image, flip_turn)
 
 
-def show_river(game):
-    if (game.pot != 0) and (game.next_player == game.active_players[0]):
-        river_card = game.table_cards[-1]
-        flip_river = pygame.Rect(0, 0, river_card.width, river_card.height)
-        flip_river.midbottom = (620, 325)
-        screen.blit(river_card.front_image, flip_river)
-        pygame.display.flip()
+
+def show_river(game, screen):
+    river_card = game.table_cards[-1]
+    flip_river = pygame.Rect(0, 0, river_card.width, river_card.height)
+    flip_river.midbottom = (620, 325)
+    screen.blit(river_card.front_image, flip_river)
+
 
 #Card Sizes & Position
 
 
-def create_cards():
-    for player in game.active_players:
-        #card_spacing = 10
+def create_cards(game, screen):
+    screen.fill((0, 128, 0))
 
+    if game.round == 1:
+        show_flop(game, screen)
+    elif game.round == 2:
+        show_turn(game, screen)
+    elif game.round == 3:
+        show_river(game, screen)
+
+    for player in game.active_players:
         for j, card in enumerate(player.hand):
             if player == game.active_players[0]:
                 if j == 0:
                     player1_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player1_card1.bottomright = (445, 70)
+                    player1_card1.topleft = (400, 585)
                     screen.blit(card.front_image, player1_card1)
                 elif j == 1:
                     player1_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player1_card2.bottomright = (505, 70)
+                    player1_card2.topleft = (450, 585)
                     screen.blit(card.front_image, player1_card2)
             elif player == game.active_players[1]:
                 if j == 0:
                     player2_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player2_card1.bottomright = (0, 380)
-                    screen.blit(card.back_image, player2_card1)
+                    player2_card1.topleft = (5, 200)
+                    card_rotate1 = pygame.transform.rotate(card.back_image, 90)
+                    screen.blit(card_rotate1, player2_card1)
+                    #pygame.display.update(player2_card1)
                 elif j == 1:
                     player2_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player2_card2.bottomright = (0, 320)
-                    screen.blit(card.back_image, player2_card2)
+                    player2_card2.topleft = (5, 250)
+                    card_rotate1 = pygame.transform.rotate(card.back_image, 90)
+                    screen.blit(card_rotate1, player2_card2)
+                    #pygame.display.update(player2_card2)
             elif player == game.active_players[2]:
                 if j == 0:
                     player3_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player3_card1.bottomright = (1000, 430)
-                    screen.blit(card.back_image, player3_card1)
+                    player3_card1.topleft = (840, 200)
+                    card_rotate2 = pygame.transform.rotate(card.back_image, 270)
+                    screen.blit(card_rotate2, player3_card1)
                 elif j == 1:
                     player3_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player3_card2.bottomright = (1000, 370)
-                    screen.blit(card.back_image, player3_card2)
+                    player3_card2.topleft = (840, 250)
+                    card_rotate2 = pygame.transform.rotate(card.back_image, 270)
+                    screen.blit(card_rotate2, player3_card2)
 
-            pygame.display.flip()
+    pygame.display.update()
 
 
-def change_dimensions(new_Width, new_Height):
+def change_dimensions(game, new_Width, new_Height):
     global window_start_Width, window_start_Height
 
     x_scale = new_Width / window_start_Width
@@ -121,23 +130,55 @@ def change_dimensions(new_Width, new_Height):
             card.rect.width = int(card.rect.width * x_scale)
             card.rect.height = int(card.rect.height * y_scale)
 
-            card.front_image = pygame.transform.scale(card.front_image, card.width * x_scale, card.height * y_scale)
-            card.back_image = pygame.transform.scale(card.back_image, card.width * x_scale, card.height * y_scale)
-            pygame.display.flip()
-
-
-running = True
-while running:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.VIDEORESIZE:
-            screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-            change_dimensions(event.w, event.h)
-
-    screen.fill((0, 128, 0))
+            card.front_image = pygame.transform.scale(card.front_image, (card.rect.width, card.rect.height))
+            card.back_image = pygame.transform.scale(card.back_image, (card.rect.width, card.rect.height))
 
     pygame.display.flip()
-    clock.tick(60)
 
+
+def update(game, screen, clock):
+    if game.round == 1:
+        show_flop(game, screen)
+    elif game.round == 2:
+        show_turn(game, screen)
+    elif game.round == 3:
+        show_river(game, screen)
+
+    pygame.display.flip()
+
+def redraw_screen(game, screen, clock):
+    screen.fill((0, 128, 0))
+    update(game, screen, clock)
+    pygame.display.flip()
+
+
+
+class Button():
+    def __init__(self, x, y, width, height, text, font_size=20, enabled=True):
+        self.text = text
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.font_size = font_size
+        self.enabled = enabled
+        self.font = pygame.font.Font(None, self.font_size)
+
+    def draw(self, screen):
+        if self.enabled:
+            button_color = (0, 0, 255)
+            text_color = (255, 255, 255)
+        else:
+            button_color = (128, 128, 128)
+            text_color = (0, 0, 0)
+        pygame.draw.rect(screen, button_color, (self.x, self.y, self.width, self.height))
+        pygame.draw.rect(screen, (0, 0, 0), (self.x, self.y, self.width, self.height), 2)
+        button_text = self.font.render(self.text, True, text_color)
+        text_rect = button_text.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
+        screen.blit(button_text, text_rect)
+
+
+    def check_click(self, mouse_pos):
+        x_Overbutton = self.x <= mouse_pos[0] <= self.x + self.width
+        y_Overbutton = self.y <= mouse_pos[1] <= self.y + self.height
+        return x_Overbutton and y_Overbutton
