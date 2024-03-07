@@ -36,7 +36,6 @@ def main():
 
 
 
-        fold_button.draw(screen)
         pygame.display.flip()
 
     pygame.quit()
@@ -58,16 +57,18 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     fold_button = gui.Button(600, 550, 100, 50, "Fold", 30, True)
     fold_button.draw(game.screen)
     moves = player.get_moves(game)
-    events = pygame.event.get()
-    mouse_pos = pygame.mouse.get_pos()
-    if (fold_button.check_click(mouse_pos, events)) and moves['fold'] is True:
-        return ('fold', 0)
-    elif (game.check_button.check_click(mouse_pos, events)) and moves['check'] is True:
-        return ('check', player.bet)
-    elif (game.call_button.check_click(mouse_pos, events)) and moves['call'] is True:
-        return ('call', player.bet)
-    elif (game.bet_button.check_click(mouse_pos, events)) and moves['bet'] is True:
-        return ('bet', player.bet)
+    input_received = False
+    while(input_received == False):
+        events = pygame.event.get()
+        mouse_pos = pygame.mouse.get_pos()
+        if (fold_button.check_click(mouse_pos, events)) and moves['fold'] is True:
+            return ('fold', 0)
+        elif (game.check_button.check_click(mouse_pos, events)) and moves['check'] is True:
+            return ('check', player.bet)
+        elif (game.call_button.check_click(mouse_pos, events)) and moves['call'] is True:
+            return ('call', player.bet)
+        elif (game.bet_button.check_click(mouse_pos, events)) and moves['bet'] is True:
+            return ('bet', player.bet)
 
 
 if __name__ == '__main__':
