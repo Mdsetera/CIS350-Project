@@ -3,6 +3,7 @@ import pygame
 window_start_Width = 1000
 window_start_Height = 750
 
+buttons = []
 ##method()
 def init_pygame():
     pygame.init()
@@ -133,7 +134,9 @@ def change_dimensions(game, new_Width, new_Height):
 
             card.front_image = pygame.transform.scale(card.front_image, (card.rect.width, card.rect.height))
             card.back_image = pygame.transform.scale(card.back_image, (card.rect.width, card.rect.height))
-
+        raise NotImplementedError('need to create way to change button dimensions')
+        ##currently buttons are made in main.get_user_input()
+        #list of buttons updated every time a new button is created
     pygame.display.flip()
 
 
@@ -153,7 +156,6 @@ def redraw_screen(game, screen, clock):
     update(game, screen, clock)
     pygame.display.flip()
 
-
 class Button():
     def __init__(self, x, y, width, height, text, font_size=20, enabled=True):
         self.text = text
@@ -164,6 +166,7 @@ class Button():
         self.font_size = font_size
         self.enabled = enabled
         self.font = pygame.font.Font(None, self.font_size)
+        buttons.append(self)
 
     def draw(self, screen):
         if self.enabled:

@@ -35,7 +35,8 @@ class Game:
         self.highest_bet = 0
         self.sml_blind = 10
         self.big_blind = 20
-
+        self.round = 0 ##blind amount should increase every five rounds
+        self.bet_round = 0
         self.dealer_seat = 0
         self.screen, self.clock = gui.init_pygame()
 
@@ -47,9 +48,6 @@ class Game:
             player.seat_number = self.seat.index(player)
 
         ##everyone is now seated at the table
-
-
-        self.round = 0 ##blind amount should increase every five rounds
 
 
 
@@ -69,6 +67,7 @@ class Game:
             #self.take_bets(gui.show_river, 1)
 
     def deal_initial_cards(self):
+        print('deal_initial_cards')
         if not self.table_cards:
             for player in self.active_players:
                 for x in range(2):
@@ -97,7 +96,7 @@ class Game:
                 self.handle_small_blind(self.current_player)
                 self.current_player = self.next_player(self.current_player)
                 self.handle_big_blind(self.current_player)
-
+        print('blinds taken')
 
     def handle_small_blind(self, current_player):
         if current_player.chips < self.sml_blind:
@@ -124,6 +123,7 @@ class Game:
             player.hand.append(self.table_cards[0])
             player.hand.append(self.table_cards[1])
             player.hand.append(self.table_cards[2])
+        print('flop cards added')
 
 
     def update_pot(self):
@@ -149,6 +149,7 @@ class Game:
             #increment pot eligibility
             for player in players_with_bets:
                 player.pot_eligibility += 1
+        print('pot updated')
 
     def next_player(self, current_player):
         #returns the player whos turn is next
@@ -258,7 +259,7 @@ class Player:
             raise ValueError('chip count must be a multiple of 5')
         else:
             self._chips = num
-    def _play(self, game:Game) -> bool :
+    def _play(self, game:Game, input) -> bool :
         """
         Will control each turn that the player takes
         player input = {"fold":_fold, "check":_call, "call":_call, "bet":_bet}
