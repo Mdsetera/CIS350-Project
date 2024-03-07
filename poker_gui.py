@@ -1,9 +1,13 @@
+import os.path
+
 import pygame
 
 window_start_Width = 1000
 window_start_Height = 750
 
 buttons = []
+
+
 ##method()
 def init_pygame():
     pygame.init()
@@ -11,9 +15,12 @@ def init_pygame():
     screen = pygame.display.set_mode((window_start_Width, window_start_Height), pygame.RESIZABLE)
     pygame.display.set_caption("Texas Hold'Em!")
     clock = pygame.time.Clock()
+    icon_image = pygame.image.load("images\icon.png")
+    pygame.display.set_icon(icon_image)
+
     return screen, clock
 
-
+# Define a function to create text surface and rect
 
 def show_flop(game, screen):
     #print(game.table_cards)
@@ -141,11 +148,11 @@ def change_dimensions(game, new_Width, new_Height):
 
 
 def update(game, screen, clock):
-    if game.round == 1:
+    if game.bet_round == 2:
         show_flop(game, screen)
-    elif game.round == 2:
+    elif game.bet_round == 3:
         show_turn(game, screen)
-    elif game.round == 3:
+    elif game.bet_round == 4:
         show_river(game, screen)
 
     pygame.display.flip()
@@ -155,6 +162,28 @@ def redraw_screen(game, screen, clock):
     screen.fill((0, 128, 0))
     update(game, screen, clock)
     pygame.display.flip()
+def create_buttons(game):
+    fold_button = Button(600, 550, 100, 50, "Fold", 30, False)
+    check_button = Button(710, 550, 100, 50, "Check", 30, False)
+    call_button = Button(600, 610, 100, 50, "Call", 30, False)
+    bet_button = Button(710, 610, 100, 50, "Bet", 30, False)
+    fold_button.draw(game.screen)
+    check_button.draw(game.screen)
+    call_button.draw(game.screen)
+    bet_button.draw(game.screen)
+def enable_buttons(game, player):
+    moves = player.get_moves(game)
+    for button in buttons: button.enabled = False
+
+    for button in buttons:
+        if moves['fold'] and button.text == 'Fold':
+            button.enabled = True
+        if moves['check'] and button.text == 'Check':
+            button.enabled = True
+        if moves['call'] and button.text == 'Call':
+            button.enabled = True
+        if moves['bet'] and button.text == 'Bet':
+            button.enabled = True
 
 class Button():
     def __init__(self, x, y, width, height, text, font_size=20, enabled=True):
@@ -193,3 +222,69 @@ class Button():
                 if self.check_hover(mouse_pos):
                     return True
         return False
+
+
+class Label:
+    def __init__(self, text, font_size, color, position):
+        self._text = text
+        self._font_size = font_size
+        self._color = color
+        self._position = position
+        self._font = pygame.font.Font(None, self._font_size)
+        self.update_surface()
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        if isinstance(value, str):
+            self._text = value
+            self.update_surface()
+        else:
+            raise ValueError("Text must be a string")
+
+    @property
+    def font_size(self):
+        return self._font_size
+
+    @font_size.setter
+    def font_size(self, value):
+        if isinstance(value, int) and value > 0:
+            self._font_size = value
+            self._font = pygame.font.Font(None, self._font_size)
+            self.update_surface()
+        else:
+            raise ValueError("Font size must be a positive integer")
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        if isinstance(value, tuple) and len(value) == 3:
+            self._color = value
+            self.update_surface()
+        else:
+            raise ValueError("Color must be a tuple of three integers")
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, value):
+        if isinstance(value, tuple) and len(value) == 2:
+            self._position = value
+            self.update_surface()
+        else:
+            raise ValueError("Position must be a tuple of two integers")
+
+    def update_surface(self):
+        self.surface = self._font.render(self._text, True, self._color)
+        self.rect = self.surface.get_rect(topleft=self._position)
+
+    def draw(self, screen):
+        screen.blit(self.surface, self.rect.topleft)

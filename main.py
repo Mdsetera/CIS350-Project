@@ -21,7 +21,7 @@ def main():
                 pygame.display.flip()
                 gui.redraw_screen(game, screen, clock)
                 gui.create_cards(game, screen)
-            elif event.type -- pygame.FULLSCREEN:
+            elif event.type == pygame.FULLSCREEN:
                 print('fullscreened')
 
 
@@ -29,8 +29,10 @@ def main():
             game.start_round(game.screen)
             game.deal_initial_cards()
             game.take_blinds()
+            print('first round of bets')
             take_bets(game)
             game.update_pot()
+            print('heres the flop')
             gui.show_flop(game, game.screen)
             game.add_flop_cards()
             #second round of bets
@@ -43,6 +45,7 @@ def main():
 
     pygame.quit()
 def take_bets(game:Game):
+    game.bet_round+=1
     while not game.equal_bets():
         for player in game.active_players:
             if type(player) is type(UserPlayer()):
@@ -61,19 +64,19 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     moves = player.get_moves(game)
 
     #fold button
-    fold_button = gui.Button(600, 550, 100, 50, "Fold", 30, True)
+
     if moves['fold'] == False: fold_button.enabled = False
-    fold_button.draw(game.screen)
+
     #check button
-    check_button = gui.Button(710, 550, 100, 50, "Check", 30, True)
+
     if moves['check'] == False: check_button.enabled = False
     check_button.draw(game.screen)
     #call button
-    call_button = gui.Button(600, 610, 100, 50, "Call", 30, True)
+
     if moves['call'] == False: call_button.enabled = False
     call_button.draw(game.screen)
-    #bet button
-    bet_button = gui.Button(710, 610, 100, 50, "Bet", 30, True)
+
+
     if moves['bet'] == False: bet_button.enabled = False
     bet_button.draw(game.screen)
     pygame.display.flip()
