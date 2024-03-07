@@ -1,6 +1,6 @@
 import random
 import pygame
-from game_model import Game
+from game_model import Game, Player, UserPlayer
 import poker_gui as gui
 
 
@@ -25,17 +25,32 @@ def main():
                 gui.create_cards(game, screen)
 
         while not game.check_end_game():
-            game.round += 1
             game.start_round(game.screen)
             game.deal_initial_cards()
-            game.take_first_round_bets()
+            game.take_blinds()
+            take_first_round_bets(game)
+            game.update_pot()
+
+
 
 
         fold_button.draw(screen)
         pygame.display.flip()
 
     pygame.quit()
+def take_first_round_bets(game:Game):
+    while not game.equal_bets():
+        for player in game.active_players:
+            if type(player) is type(UserPlayer):
+                player._play(game, get_player_input(game, player))
+            else:
+                player._play(game)
 
+def get_player_input(game:Game, player:Player) -> (int,int):
+    #gets current player
+    #return (move, bet_amount) ex. ('bet', 50)
+    #moves = {"fold": True, "check": False, "call": False, "bet": False}
+    moves = player.get_moves(game)
 
 if __name__ == '__main__':
     main()

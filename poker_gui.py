@@ -1,5 +1,6 @@
 import pygame
 
+
 window_start_Width = 1000
 window_start_Height = 750
 
@@ -12,11 +13,7 @@ def init_pygame():
     clock = pygame.time.Clock()
     return screen, clock
 
-def get_player_input(game:Game, player:Player) -> (int,int):
-    #gets current player
-    #return (move, bet_amount) ex. ('bet', 50)
-    #moves = {"fold": True, "check": False, "call": False, "bet": False}
-    moves = player.get_moves(game)
+
 
 
 def show_flop(game, screen):

@@ -30,6 +30,7 @@ class Game:
         self.table_cards = []
         self.seat = []
         self.active_players = []
+        self.current_player:Player = None
         self.pot = []
         self.highest_bet = 0
         self.sml_blind = 10
@@ -49,16 +50,12 @@ class Game:
 
 
         self.round = 0 ##blind amount should increase every five rounds
-        while not self.check_end_game():
-            self.round += 1
-            self.start_round(self.screen)
-            self.deal_initial_cards()
-            self.take_first_round_bets()
 
 
 
     def start_round(self, screen):
         ##deal the cards
+        self.round += 1
         self.screen = screen
         self.active_players = [player for player in self.seat if player.chips > 0]
 
@@ -90,19 +87,16 @@ class Game:
             gui.create_cards(self, self.screen)
             print(self.table_cards)
 
-    def take_first_round_bets(self):
+    def take_blinds(self):
         player_turn = self.dealer_seat + 1 if self.dealer_seat + 1 < len(self.seat) else 0
-        current_player = self.seat[player_turn]
-        if current_player in self.active_players:
+        self.current_player = self.seat[player_turn]
+        if self.current_player in self.active_players:
             if len(self.active_players) == 2:
-                self.handle_big_blind(current_player)
+                self.handle_big_blind(self.current_player)
             else:
-                self.handle_small_blind(current_player)
-                current_player = self.next_player(current_player)
-                self.handle_big_blind(current_player)
-        while (not self.equal_bets()):
-                current_player._play(self) #FIX ME: need to recieve player input
-        self.update_pot()
+                self.handle_small_blind(self.current_player)
+                self.current_player = self.next_player(self.current_player)
+                self.handle_big_blind(self.current_player)
 
 
     def handle_small_blind(self, current_player):
@@ -274,9 +268,12 @@ class Player:
         player input = {"fold":_fold, "check":_call, "call":_call, "bet":_bet}
         """
         #get the input
+        input = self._get_input(game)
 
         return False
-
+    def _get_input(self, game:Game) ->str:
+        print('super class is being called')
+        return 'fold'
     def get_moves(self, game:Game):
         ##takes in game state
         #returns a dictionary with the availble moves a player can take at the current moment
@@ -373,7 +370,7 @@ class Player:
 class UserPlayer(Player):
     def __init__(self):
         super().__init__()
-    def _get_input(self, game):
+    def _play(self, game, input)->bool:
         """
         controls the turn of a user
         """
@@ -385,16 +382,17 @@ class UserPlayer(Player):
         moves = {"fold": True, "check": False
         """
         input = 1
-        return input
+        return False
 
 class AIPlayer(Player):
     def __init__(self):
         super().__init__()
-    def _get_input(self, game):
+    def _play(self, game)->bool:
         """
         controls the turn of a AI player
         """
-        input = 0
+        input = "fold"
+        return False
 '''
 def main():
     deck = Deck()
