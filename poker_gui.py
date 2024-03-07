@@ -1,6 +1,5 @@
 import pygame
 
-
 window_start_Width = 1000
 window_start_Height = 750
 
@@ -13,25 +12,55 @@ def init_pygame():
     clock = pygame.time.Clock()
     return screen, clock
 
-
-
+def get_player_input(game:Game, player:Player) -> (int,int):
+    #gets current player
+    #return (move, bet_amount) ex. ('bet', 50)
+    #moves = {"fold": True, "check": False, "call": False, "bet": False}
+    moves = player.get_moves(game)
+    events = pygame.event.get()
+    mouse_pos = pygame.mouse.get_pos()
+    if (game.fold_button.check_click(mouse_pos, events)) and moves['fold'] is True:
+        return ('fold', 0)
+    elif (game.check_button.check_click(mouse_pos, events)) and moves['check'] is True:
+        return ('check', player.bet)
+    elif (game.call_button.check_click(mouse_pos, events)) and moves['call'] is True:
+        return ('call', player.bet)
+    elif (game.bet_button.check_click(mouse_pos, events)) and moves['bet'] is True:
+        return ('bet', player.bet)
 
 def show_flop(game, screen):
     #print(game.table_cards)
-    flop_1 = game.table_cards[0]
-    flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
-    flip_card1.midbottom = (380, 325)
-    screen.blit(flop_1.front_image, flip_card1)
+    #once first round of betting is over  (so like preflop)
+    if game.round == 1:
+        flop_1 = game.table_cards[0]
+        flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
+        flip_card1.midbottom = (380, 325)
+        screen.blit(flop_1.back_image, flip_card1)
 
-    flop_2 = game.table_cards[1]
-    flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
-    flip_card2.midbottom = (440, 325)
-    screen.blit(flop_2.front_image, flip_card2)
+        flop_2 = game.table_cards[1]
+        flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
+        flip_card2.midbottom = (440, 325)
+        screen.blit(flop_2.back_image, flip_card2)
 
-    flop_3 = game.table_cards[2]
-    flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
-    flip_card3.midbottom = (500, 325)
-    screen.blit(flop_3.front_image, flip_card3)
+        flop_3 = game.table_cards[2]
+        flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
+        flip_card3.midbottom = (500, 325)
+        screen.blit(flop_3.back_image, flip_card3)
+    elif game.round == 2:
+        flop_1 = game.table_cards[0]
+        flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
+        flip_card1.midbottom = (380, 325)
+        screen.blit(flop_1.front_image, flip_card1)
+
+        flop_2 = game.table_cards[1]
+        flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
+        flip_card2.midbottom = (440, 325)
+        screen.blit(flop_2.front_image, flip_card2)
+
+        flop_3 = game.table_cards[2]
+        flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
+        flip_card3.midbottom = (500, 325)
+        screen.blit(flop_3.front_image, flip_card3)
 
 
 
@@ -132,11 +161,11 @@ def update(game, screen, clock):
 
     pygame.display.flip()
 
+
 def redraw_screen(game, screen, clock):
     screen.fill((0, 128, 0))
     update(game, screen, clock)
     pygame.display.flip()
-
 
 
 class Button():
@@ -163,8 +192,15 @@ class Button():
         text_rect = button_text.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
         screen.blit(button_text, text_rect)
 
-
-    def check_click(self, mouse_pos):
+    def check_hover(self, mouse_pos):
+        mouse_pos = pygame.mouse.get_pos()
         x_Overbutton = self.x <= mouse_pos[0] <= self.x + self.width
         y_Overbutton = self.y <= mouse_pos[1] <= self.y + self.height
         return x_Overbutton and y_Overbutton
+
+    def check_click(self, mouse_pos, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.check_hover(mouse_pos):
+                    return True
+        return False
