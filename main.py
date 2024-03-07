@@ -28,21 +28,27 @@ def main():
             game.start_round(game.screen)
             game.deal_initial_cards()
             game.take_blinds()
-            take_first_round_bets(game)
+            take_bets(game)
             game.update_pot()
             gui.show_flop(game, game.screen)
             game.add_flop_cards()
+            take_bets(game)
 
+
+
+        fold_button.draw(screen)
         pygame.display.flip()
 
     pygame.quit()
-def take_first_round_bets(game:Game):
+def take_bets(game:Game):
     while not game.equal_bets():
         for player in game.active_players:
             if type(player) is type(UserPlayer):
                 player._play(game, get_player_input(game, player))
             else:
                 player._play(game)
+            if game.equal_bets():
+                break
 
 
 def get_player_input(game: Game, player: Player) -> (int,int):
