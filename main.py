@@ -9,8 +9,8 @@ def main():
     game = Game(num_User_players=3, num_AI_players=0)
     print('shitter')
     screen, clock = gui.init_pygame()
-    fold_button = gui.Button(600, 550, 100, 50, "Fold", 30, True)
-    fold_button.draw(screen)
+    #fold_button = gui.Button(600, 550, 100, 50, "Fold", 30, True)
+    #fold_button.draw(screen)
     running = True
     while running:
         for event in pygame.event.get():
@@ -33,9 +33,6 @@ def main():
             gui.show_flop(game, game.screen)
             game.add_flop_cards()
 
-
-
-        fold_button.draw(screen)
         pygame.display.flip()
 
     pygame.quit()
@@ -48,11 +45,23 @@ def take_first_round_bets(game:Game):
                 player._play(game)
 
 
-def get_player_input(game:Game, player:Player) -> (int,int):
+def get_player_input(game: Game, player: Player) -> (int,int):
     #gets current player
     #return (move, bet_amount) ex. ('bet', 50)
     #moves = {"fold": True, "check": False, "call": False, "bet": False}
+    fold_button = gui.Button(600, 550, 100, 50, "Fold", 30, True)
+    fold_button.draw(game.screen)
     moves = player.get_moves(game)
+    events = pygame.event.get()
+    mouse_pos = pygame.mouse.get_pos()
+    if (fold_button.check_click(mouse_pos, events)) and moves['fold'] is True:
+        return ('fold', 0)
+    elif (game.check_button.check_click(mouse_pos, events)) and moves['check'] is True:
+        return ('check', player.bet)
+    elif (game.call_button.check_click(mouse_pos, events)) and moves['call'] is True:
+        return ('call', player.bet)
+    elif (game.bet_button.check_click(mouse_pos, events)) and moves['bet'] is True:
+        return ('bet', player.bet)
 
 
 if __name__ == '__main__':

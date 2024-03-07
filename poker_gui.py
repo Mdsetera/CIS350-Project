@@ -12,21 +12,7 @@ def init_pygame():
     clock = pygame.time.Clock()
     return screen, clock
 
-def get_player_input(game:Game, player:Player) -> (int,int):
-    #gets current player
-    #return (move, bet_amount) ex. ('bet', 50)
-    #moves = {"fold": True, "check": False, "call": False, "bet": False}
-    moves = player.get_moves(game)
-    events = pygame.event.get()
-    mouse_pos = pygame.mouse.get_pos()
-    if (game.fold_button.check_click(mouse_pos, events)) and moves['fold'] is True:
-        return ('fold', 0)
-    elif (game.check_button.check_click(mouse_pos, events)) and moves['check'] is True:
-        return ('check', player.bet)
-    elif (game.call_button.check_click(mouse_pos, events)) and moves['call'] is True:
-        return ('call', player.bet)
-    elif (game.bet_button.check_click(mouse_pos, events)) and moves['bet'] is True:
-        return ('bet', player.bet)
+
 
 def show_flop(game, screen):
     #print(game.table_cards)
