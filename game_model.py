@@ -119,16 +119,12 @@ class Game:
         if current_player.bet > self.highest_bet:
             self.highest_bet = current_player.bet
 
+    def add_flop_cards(self):
+        for player in self.active_players:
+            player.hand.append(self.table_cards[0])
+            player.hand.append(self.table_cards[1])
+            player.hand.append(self.table_cards[2])
 
-    def take_bets(self, show_cards_function, num_cards):
-        self.show_table_cards(num_cards, show_cards_function, self.screen)
-        self.update_pot()
-
-    def show_table_cards(self, num_cards, show_cards_function, screen):
-        #self.table_cards.extend(self.deck.stack[:num_cards])
-        #print(f"After extending: {self.table_cards}")
-        #self.deck.stack = self.deck.stack[num_cards:]
-        show_cards_function(self, screen)
 
     def update_pot(self):
         for x in range(len(self.active_players)):

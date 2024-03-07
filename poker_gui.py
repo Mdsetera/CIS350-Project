@@ -18,37 +18,20 @@ def init_pygame():
 
 def show_flop(game, screen):
     #print(game.table_cards)
-    #once first round of betting is over  (so like preflop)
-    if game.round == 1:
-        flop_1 = game.table_cards[0]
-        flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
-        flip_card1.midbottom = (380, 325)
-        screen.blit(flop_1.back_image, flip_card1)
+    flop_1 = game.table_cards[0]
+    flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
+    flip_card1.midbottom = (380, 325)
+    screen.blit(flop_1.front_image, flip_card1)
 
-        flop_2 = game.table_cards[1]
-        flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
-        flip_card2.midbottom = (440, 325)
-        screen.blit(flop_2.back_image, flip_card2)
+    flop_2 = game.table_cards[1]
+    flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
+    flip_card2.midbottom = (440, 325)
+    screen.blit(flop_2.front_image, flip_card2)
 
-        flop_3 = game.table_cards[2]
-        flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
-        flip_card3.midbottom = (500, 325)
-        screen.blit(flop_3.back_image, flip_card3)
-    elif game.round == 2:
-        flop_1 = game.table_cards[0]
-        flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
-        flip_card1.midbottom = (380, 325)
-        screen.blit(flop_1.front_image, flip_card1)
-
-        flop_2 = game.table_cards[1]
-        flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
-        flip_card2.midbottom = (440, 325)
-        screen.blit(flop_2.front_image, flip_card2)
-
-        flop_3 = game.table_cards[2]
-        flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
-        flip_card3.midbottom = (500, 325)
-        screen.blit(flop_3.front_image, flip_card3)
+    flop_3 = game.table_cards[2]
+    flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
+    flip_card3.midbottom = (500, 325)
+    screen.blit(flop_3.front_image, flip_card3)
 
 
 

@@ -30,7 +30,8 @@ def main():
             game.take_blinds()
             take_first_round_bets(game)
             game.update_pot()
-
+            gui.show_flop(game, game.screen)
+            game.add_flop_cards()
 
 
 
@@ -46,11 +47,13 @@ def take_first_round_bets(game:Game):
             else:
                 player._play(game)
 
+
 def get_player_input(game:Game, player:Player) -> (int,int):
     #gets current player
     #return (move, bet_amount) ex. ('bet', 50)
     #moves = {"fold": True, "check": False, "call": False, "bet": False}
     moves = player.get_moves(game)
+
 
 if __name__ == '__main__':
     main()
