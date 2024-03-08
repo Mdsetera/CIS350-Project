@@ -63,22 +63,6 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     print('getting input from player', game.seat.index(player)+1)
     moves = player.get_moves(game)
 
-    #fold button
-
-    if moves['fold'] == False: fold_button.enabled = False
-
-    #check button
-
-    if moves['check'] == False: check_button.enabled = False
-    check_button.draw(game.screen)
-    #call button
-
-    if moves['call'] == False: call_button.enabled = False
-    call_button.draw(game.screen)
-
-
-    if moves['bet'] == False: bet_button.enabled = False
-    bet_button.draw(game.screen)
     pygame.display.flip()
     input_received = False
     while(input_received == False):
@@ -96,15 +80,18 @@ def get_player_input(game: Game, player: Player) -> (int,int):
 
         mouse_pos = pygame.mouse.get_pos()
         events = pygame.event.get()
-        if (fold_button.check_click(mouse_pos, events)):
-            print('clicked fold button')
-            return ('fold', 0)
-        # elif (game.check_button.check_click(mouse_pos, events)) and moves['check'] is True:
-        #     return ('check', player.bet)
-        # elif (game.call_button.check_click(mouse_pos, events)) and moves['call'] is True:
-        #     return ('call', player.bet)
-        # elif (game.bet_button.check_click(mouse_pos, events)) and moves['bet'] is True:
-        #     return ('bet', player.bet)
+        for button in gui.buttons:
+            if (button.check_click(mouse_pos, events)):
+                if button.text == "Fold":
+                    return ('fold', 0)
+                elif button.text == "Check":
+                    return ('check', 0)
+                elif button.text == 'Call':
+                    return ('call', 0)
+                elif button.text == 'Bet':
+                    bet_amount = 20 #FIXME get bet amount from slider
+                    return ('bet', bet_amount)
+
     return ('no input received', 0)
 def resize_video(game:Game, screen, clock):
     pass

@@ -173,17 +173,17 @@ def create_buttons(game):
     bet_button.draw(game.screen)
 def enable_buttons(game, player):
     moves = player.get_moves(game)
-    for button in buttons: button.enabled = False
-
     for button in buttons:
+        button.enabled = False
         if moves['fold'] and button.text == 'Fold':
             button.enabled = True
-        if moves['check'] and button.text == 'Check':
+        elif moves['check'] and button.text == 'Check':
             button.enabled = True
-        if moves['call'] and button.text == 'Call':
+        elif moves['call'] and button.text == 'Call':
             button.enabled = True
-        if moves['bet'] and button.text == 'Bet':
+        elif moves['bet'] and button.text == 'Bet':
             button.enabled = True
+        button.draw(game.screen)
 
 class Button():
     def __init__(self, x, y, width, height, text, font_size=20, enabled=True):
@@ -220,6 +220,7 @@ class Button():
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.check_hover(mouse_pos):
+                    print(f'clicked \'{self.text}\' button')
                     return True
         return False
 
