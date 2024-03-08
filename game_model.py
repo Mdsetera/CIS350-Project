@@ -31,7 +31,7 @@ class Game:
         self.seat = []
         self.active_players = []
         self.current_player:Player = None
-        self.pot = []
+        self.pot = [0]
         self.highest_bet = 0
         self.sml_blind = 10
         self.big_blind = 20
@@ -264,8 +264,12 @@ class Player:
         Will control each turn that the player takes
         player input = {"fold":_fold, "check":_call, "call":_call, "bet":_bet}
         """
-        #get the input
-        input = self._get_input(game)
+        move = {"fold":self._fold, "check":self._call, "call":self._call, "bet":self._bet}
+        if input[0].lower() == 'bet':
+            self._bet(game, input[1])
+        else:
+            move[input[0].lower()](game)
+
 
         return False
     def _get_input(self, game:Game) ->str:
@@ -311,9 +315,7 @@ class Player:
             self.chips -= amount
 
         return True
-    def _can_bet(self, game:Game)->bool:
-        """FIXME"""
-        return False
+
 
     def get_bet_range(self, game:Game) -> (int,int):
         """
@@ -341,6 +343,7 @@ class Player:
         """
         player ends involvement in the round and forfeits eligibility to the pot
         """
+
         game.pot[self.pot_eligibility] += self.bet
         self.pot_eligibility = -1
         game.active_players.remove(self)
@@ -369,16 +372,9 @@ class UserPlayer(Player):
         super().__init__()
     def _play(self, game, input)->bool:
         """
-        controls the turn of a user
+        receives the input of the player, sends it to the super class
         """
-        """FIXME
-        show current players cards, hide everyone elses cards
-        in poker_gui, we need a method that calls player.get_moves(),
-        and returns the input players choses move
-        player input = {0:_fold, 1:_check, 2:_call, 3:_bet}
-        moves = {"fold": True, "check": False
-        """
-        input = 1
+        super()._play(game, input)
         return False
 
 class AIPlayer(Player):
@@ -388,7 +384,8 @@ class AIPlayer(Player):
         """
         controls the turn of a AI player
         """
-        input = "fold"
+        input = ("fold",0)
+        super()._play(game, input)
         return False
 '''
 def main():

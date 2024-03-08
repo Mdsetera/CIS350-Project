@@ -7,8 +7,10 @@ screen, clock = gui.init_pygame()
 def main():
     #Initialize game instance
     game = Game(num_User_players=3, num_AI_players=0)
-    print('shitter')
     screen, clock = gui.init_pygame()
+    screen.fill((0, 128, 0))
+    gui.create_buttons(game)
+    gui.create_labels(game)
     running = True
     while running:
         for event in pygame.event.get():
@@ -21,6 +23,8 @@ def main():
                 pygame.display.flip()
                 gui.redraw_screen(game, screen, clock)
                 gui.create_cards(game, screen)
+                gui.create_buttons(game)
+                gui.create_labels(game)
             elif event.type == pygame.FULLSCREEN:
                 print('fullscreened')
 
@@ -52,6 +56,7 @@ def take_bets(game:Game):
                 player._play(game, get_player_input(game, player))
             else:
                 player._play(game)
+            gui.update_labels(game)
             if game.equal_bets():
                 break
 
@@ -59,13 +64,10 @@ def take_bets(game:Game):
 def get_player_input(game: Game, player: Player) -> (int,int):
     #gets current player
     #return (move, bet_amount) ex. ('bet', 50)
-    #moves = {"fold": True, "check": False, "call": False, "bet": False}
     print('getting input from player', game.seat.index(player)+1)
-    moves = player.get_moves(game)
-
-    pygame.display.flip()
+    gui.enable_buttons(game, player)
     input_received = False
-    while(input_received == False):
+    while(input_received == False):#FIXME turn this while loop into a timer, when timer ends return ('fold', 0)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -91,8 +93,8 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                 elif button.text == 'Bet':
                     bet_amount = 20 #FIXME get bet amount from slider
                     return ('bet', bet_amount)
-
-    return ('no input received', 0)
+    raise ValueError('no input received')
+    return ('fold', 0)
 def resize_video(game:Game, screen, clock):
     pass
 

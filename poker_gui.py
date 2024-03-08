@@ -1,13 +1,17 @@
 import os.path
 
 import pygame
+from enum import Enum
 
 window_start_Width = 1000
 window_start_Height = 750
 
 buttons = []
-
-
+labels_chip_count = []
+class Color(Enum):
+    GREEN = (0, 128, 0)
+    BLUE = (0,255,0)
+    RED = (255,0,0)
 ##method()
 def init_pygame():
     pygame.init()
@@ -77,13 +81,13 @@ def show_river(game, screen):
 
 
 def create_cards(game, screen):
-    screen.fill((0, 128, 0))
 
-    if game.round == 1:
+
+    if game.bet_round == 2:
         show_flop(game, screen)
-    elif game.round == 2:
+    elif game.bet_round == 3:
         show_turn(game, screen)
-    elif game.round == 3:
+    elif game.bet_round == 4:
         show_river(game, screen)
 
     for player in game.active_players:
@@ -141,7 +145,7 @@ def change_dimensions(game, new_Width, new_Height):
 
             card.front_image = pygame.transform.scale(card.front_image, (card.rect.width, card.rect.height))
             card.back_image = pygame.transform.scale(card.back_image, (card.rect.width, card.rect.height))
-        raise NotImplementedError('need to create way to change button dimensions')
+        #raise NotImplementedError('need to create way to change button dimensions')
         ##currently buttons are made in main.get_user_input()
         #list of buttons updated every time a new button is created
     pygame.display.flip()
@@ -159,7 +163,7 @@ def update(game, screen, clock):
 
 
 def redraw_screen(game, screen, clock):
-    screen.fill((0, 128, 0))
+    screen.fill(Color.GREEN)
     update(game, screen, clock)
     pygame.display.flip()
 def create_buttons(game):
@@ -171,6 +175,7 @@ def create_buttons(game):
     check_button.draw(game.screen)
     call_button.draw(game.screen)
     bet_button.draw(game.screen)
+    pygame.display.flip()
 def enable_buttons(game, player):
     moves = player.get_moves(game)
     for button in buttons:
@@ -184,6 +189,33 @@ def enable_buttons(game, player):
         elif moves['bet'] and button.text == 'Bet':
             button.enabled = True
         button.draw(game.screen)
+    pygame.display.flip()
+def create_labels(game):
+    for player in game.seat:
+        num_labels = len(labels_chip_count)
+        label_text = f'Player {game.seat.index(player)} Chips: {player.chips}'
+        labels_chip_count.append(Label(label_text, 40, (0,0,255), (5, 5+(40*num_labels)) ))
+    for label in labels_chip_count:
+        label.draw(game.screen)
+
+    pygame.display.flip()
+def update_labels(game):
+    #reset all labels used in the game
+    #erase label text by redrawing in green
+    for label in labels_chip_count:
+        current_color = label.color
+        label.color = Color.GREEN
+        label.draw(game.screen)
+        label.color = current_color
+    #set labels to new text
+    for player_num in range(len(game.seat)):
+        label_text = f'Player {player_num} Chips: {game.seat[player_num].chips}'
+        labels_chip_count[player_num].text = label_text
+        labels_chip_count[player_num].draw(game.screen)
+    #test visibility
+    labels_chip_count[0].visible = False
+    labels_chip_count[0].draw(game.screen)
+    pygame.display.flip()
 
 class Button():
     def __init__(self, x, y, width, height, text, font_size=20, enabled=True):
@@ -233,6 +265,7 @@ class Label:
         self._position = position
         self._font = pygame.font.Font(None, self._font_size)
         self.update_surface()
+        self._visible = True
 
     @property
     def text(self):
@@ -265,6 +298,7 @@ class Label:
 
     @color.setter
     def color(self, value):
+        if isinstance(value, Color): value = value.value #LMAO
         if isinstance(value, tuple) and len(value) == 3:
             self._color = value
             self.update_surface()
@@ -282,10 +316,21 @@ class Label:
             self.update_surface()
         else:
             raise ValueError("Position must be a tuple of two integers")
+    @property
+    def visible(self):
+        return self._visible
 
+    @visible.setter
+    def visible(self, value):
+        if isinstance(value, bool):
+            if value:
+                self._visible = value
+        else:
+            raise ValueError("Visibility must be a boolean")
     def update_surface(self):
         self.surface = self._font.render(self._text, True, self._color)
         self.rect = self.surface.get_rect(topleft=self._position)
 
     def draw(self, screen):
-        screen.blit(self.surface, self.rect.topleft)
+        if self.visible:
+            screen.blit(self.surface, self.rect.topleft)
