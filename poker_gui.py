@@ -8,6 +8,8 @@ window_start_Height = 750
 
 buttons = []
 labels_chip_count = []
+labels_player_bet = []
+
 class Color(Enum):
     GREEN = (0, 128, 0)
     BLUE = (0,255,0)
@@ -163,7 +165,7 @@ def update(game, screen, clock):
 
 
 def redraw_screen(game, screen, clock):
-    screen.fill(Color.GREEN)
+    screen.fill(Color.GREEN.value)
     update(game, screen, clock)
     pygame.display.flip()
 def create_buttons(game):
@@ -194,27 +196,31 @@ def create_labels(game):
     for player in game.seat:
         num_labels = len(labels_chip_count)
         label_text = f'Player {game.seat.index(player)} Chips: {player.chips}'
-        labels_chip_count.append(Label(label_text, 40, (0,0,255), (5, 5+(40*num_labels)) ))
-    for label in labels_chip_count:
-        label.draw(game.screen)
+        labels_chip_count.append(Label(label_text, 40, Color.BLUE, (5, 5+(40*num_labels)) ))
+        label_bet_text = f'Player {game.seat.index(player)} Bet: {player.bet}'
+        labels_player_bet.append(Label(label_bet_text, 40, Color.BLUE, (5, 450+(40*num_labels)) ))
+    for label in labels_chip_count: label.draw(game.screen)
+    for label in labels_player_bet: label.draw(game.screen)
+
+
 
     pygame.display.flip()
 def update_labels(game):
     #reset all labels used in the game
-    #erase label text by redrawing in green
-    for label in labels_chip_count:
-        current_color = label.color
-        label.color = Color.GREEN
-        label.draw(game.screen)
-        label.color = current_color
+    #erase label text by redrawing
+    for label in labels_chip_count + labels_player_bet:
+        new = pygame.Surface(label.rect.size)
+        new.fill(Color.GREEN.value)
+        game.screen.blit(new, label.rect.topleft)
     #set labels to new text
     for player_num in range(len(game.seat)):
         label_text = f'Player {player_num} Chips: {game.seat[player_num].chips}'
+        label_bet_text = f'Player {player_num} Bet: {game.seat[player_num].bet}'
         labels_chip_count[player_num].text = label_text
         labels_chip_count[player_num].draw(game.screen)
+        labels_player_bet[player_num].text = label_bet_text
+        labels_player_bet[player_num].draw(game.screen)
     #test visibility
-    labels_chip_count[0].visible = False
-    labels_chip_count[0].draw(game.screen)
     pygame.display.flip()
 
 class Button():
@@ -259,6 +265,7 @@ class Button():
 
 class Label:
     def __init__(self, text, font_size, color, position):
+        if isinstance(color, Color): color = color.value
         self._text = text
         self._font_size = font_size
         self._color = color
@@ -334,3 +341,4 @@ class Label:
     def draw(self, screen):
         if self.visible:
             screen.blit(self.surface, self.rect.topleft)
+

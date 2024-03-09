@@ -92,10 +92,12 @@ class Game:
         if self.current_player in self.active_players:
             if len(self.active_players) == 2:
                 self.handle_big_blind(self.current_player)
+                self.current_player = self.next_player(self.current_player)
             else:
                 self.handle_small_blind(self.current_player)
                 self.current_player = self.next_player(self.current_player)
                 self.handle_big_blind(self.current_player)
+                self.current_player = self.next_player(self.current_player)
         print('blinds taken')
 
     def handle_small_blind(self, current_player):
@@ -164,6 +166,15 @@ class Game:
             if player.bet != self.highest_bet and (player.all_in == False):
                 return False
         return True
+    def check_end_round(self) -> bool:
+        if len(self.active_players) == 1:
+            return True
+        return False
+    def end_round(self, winners:list):
+        #recives a list of the winners of the round
+        #splits the pot between the winners
+        #gives money back to people with higher pot eligibility
+        pass
     @property
     def dealer_seat(self):
         return self._dealer_seat
@@ -189,7 +200,12 @@ class Game:
             return True
         else:
             return False
-
+    def compare_hands(self, player:list)->list:
+        #recieves a list of players
+        #compares the hands of each of the players
+        #returns list of player(s) with best hand
+        #FIXME build this method
+        return [player[0]]
 class Deck:
     def __init__(self):
         self.stack = []
@@ -265,10 +281,12 @@ class Player:
         player input = {"fold":_fold, "check":_call, "call":_call, "bet":_bet}
         """
         move = {"fold":self._fold, "check":self._call, "call":self._call, "bet":self._bet}
-        if input[0].lower() == 'bet':
-            self._bet(game, input[1])
-        else:
-            move[input[0].lower()](game)
+        game.current_player = game.next_player(game.current_player)#switches player before they make a move because fold removes them from active players
+        if not self.all_in:
+            if input[0].lower() == 'bet':
+                self._bet(game, input[1])
+            else:
+                move[input[0].lower()](game)
 
 
         return False
@@ -367,6 +385,7 @@ class Player:
         given a hand of cards, returns the type of hand
         sets the hand rank and best card
         """
+
 class UserPlayer(Player):
     def __init__(self):
         super().__init__()

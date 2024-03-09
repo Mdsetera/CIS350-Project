@@ -11,6 +11,9 @@ def main():
     screen.fill((0, 128, 0))
     gui.create_buttons(game)
     gui.create_labels(game)
+    label_dealer = gui.Label(f"Dealer: Player {game.dealer_seat}", 20, gui.Color.BLUE.value, (5, 120))
+    label_dealer.draw(game.screen)
+
     running = True
     while running:
         for event in pygame.event.get():
@@ -34,15 +37,20 @@ def main():
             game.deal_initial_cards()
             game.take_blinds()
             print('first round of bets')
+            pygame.display.flip()
             take_bets(game)
             game.update_pot()
+            if game.check_end_round():
+                winner = game.active_players[0]
+                game.end_round(winner)
+                pass
             print('heres the flop')
             gui.show_flop(game, game.screen)
             game.add_flop_cards()
             #second round of bets
             print('second round of bets')
             take_bets(game)
-
+            game.update_pot()
 
 
         pygame.display.flip()
@@ -50,6 +58,7 @@ def main():
     pygame.quit()
 def take_bets(game:Game):
     game.bet_round+=1
+
     while not game.equal_bets():
         for player in game.active_players:
             if type(player) is type(UserPlayer()):
