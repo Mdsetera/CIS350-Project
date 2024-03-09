@@ -174,7 +174,29 @@ class Game:
         #recives a list of the winners of the round
         #splits the pot between the winners
         #gives money back to people with higher pot eligibility
-        pass
+        eligibility = []
+        for x in range(len(self.pot)):
+            eligibility.append([])
+            for p in self.seat:
+                if p.pot_eligibility == x: eligibility[x].append(p)
+            for player in winners:
+                if player in eligibility[x]:
+                    player.chips += self.pot[x] / len(winners)
+                self.pot[x] -= self.pot[x] / len(winners)
+            for player in eligibility[x]:
+                player.chips += self.pot[x] / len(eligibility[x])
+                self.pot[x] -= self.pot[x] / len(eligibility[x])
+        self.pot = [0]
+        self.active_players = []
+        self.round += 1
+        ##FIXME increase blinds when applicable
+        self.dealer_seat += 1
+        if self.dealer_seat == len(self.seat): self.dealer_seat = 0
+        self.bet_round = 0
+        self.highest_bet = 0
+        self.table_cards = []
+        self.deck = Deck()
+        #FIXME remove everyones cards from their hand
     @property
     def dealer_seat(self):
         return self._dealer_seat
