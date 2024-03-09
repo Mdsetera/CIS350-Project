@@ -257,9 +257,10 @@ class Button():
         screen.blit(button_text, text_rect)
 
     def check_hover(self, mouse_pos):
-        mouse_pos = pygame.mouse.get_pos()
+        #mouse_pos = pygame.mouse.get_pos()
         x_Overbutton = self.x <= mouse_pos[0] <= self.x + self.width
         y_Overbutton = self.y <= mouse_pos[1] <= self.y + self.height
+        print(f'Hover check for button\'{self.text}\': {x_Overbutton and y_Overbutton}')
         return x_Overbutton and y_Overbutton
 
     def check_click(self, mouse_pos, events):
@@ -269,6 +270,57 @@ class Button():
                     print(f'clicked \'{self.text}\' button')
                     return True
         return False
+
+class Slider():
+    def __init__(self, x, y, width, height, minimum, maximum, step):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.minimum = minimum
+        self.maximum = maximum
+        self.step = step
+        self.value = minimum
+        self.slider_rect = pygame.Rect(x, y + height // 3, width, height // 3)
+        self.pointer_rect = pygame.Rect(x, y, 20, height)
+        self.dragging = False
+
+
+    def draw(self, screen):
+        #draw slider bar
+        pygame.draw.rect(screen, (200, 200, 200), self.slider_rect)
+        #draw slider pointer
+        pygame.draw.rect(screen, (0, 0, 0), self.pointer_rect)
+
+        pygame.draw.rect(screen, (255, 255, 255), (self.x, self.y + self.height + 5, self.width, 15))
+        #draw value
+        font = pygame.font.Font(None, 24)
+        text = font.render(str(self.value), True, (0, 0, 0))
+        screen.blit(text, (self.x + self.width // 2, self.y + self.height + 5))
+
+    def handle_click(self, mouse_pos):
+        mouse_x, mouse_y = mouse_pos
+        if self.pointer_rect.collidepoint(mouse_x, mouse_y):
+            self.dragging = True
+
+    def handle_drag(self, mouse_pos):
+        if self.dragging:
+            mouse_x, mouse_y =  mouse_pos
+
+            pointer_x = max(self.x, min(mouse_x - self.pointer_rect.width // 2, self.x + self.width
+                                        - self.pointer_rect.width))
+            self.pointer_rect.x = pointer_x
+
+            normal_pos = (pointer_x - self.x) / self.width
+            self.value = int(self.minimum + normal_pos * (self.maximum - self.minimum) / self.step) * self.step
+
+    def handle_release(self):
+        self.dragging = False
+
+    def move_slider(self, mouse_pos):
+        self.pointer_rect.centerx = mouse_pos[0]
+
+
 
 
 class Label:

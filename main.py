@@ -81,8 +81,13 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     print('getting input from player', game.seat.index(player)+1)
     gui.enable_buttons(game, player)
     input_received = False
+    betslider = None
+    submit_button = None
+    cancel_button = None
+
     while(input_received == False):#FIXME turn this while loop into a timer, when timer ends return ('fold', 0)
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
@@ -95,9 +100,9 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                 gui.create_cards(game, screen)
 
         mouse_pos = pygame.mouse.get_pos()
-        events = pygame.event.get()
+        #events = pygame.event.get()
         for button in gui.buttons:
-            if (button.check_click(mouse_pos, events)):
+            if button.check_click(mouse_pos, events):
                 if button.text == "Fold":
                     return ('fold', 0)
                 elif button.text == "Check":
@@ -105,8 +110,42 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                 elif button.text == 'Call':
                     return ('call', 0)
                 elif button.text == 'Bet':
-                    bet_amount = 20 #FIXME get bet amount from slider
-                    return ('bet', bet_amount)
+                    betslider = gui.Slider(700, 500, 200, 20, 0, 1100, 10)
+                    submit_button = gui.Button(700, 460, 80, 30, "Submit Bet", 20, True)
+                    cancel_button = gui.Button(800, 460, 80, 30, "Cancel", 20, True)
+
+        if betslider:
+            betslider.draw(game.screen)
+            submit_button.draw(game.screen)
+            cancel_button.draw(game.screen)
+            pygame.display.flip()
+
+            mouse_pos = pygame.mouse.get_pos()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if betslider.handle_click(mouse_pos):
+                    betslider.dragging = True
+                if submit_button.check_click(mouse_pos, events):
+                    input_received = True
+                    return ('bet', betslider.value)
+                if cancel_button.check_click(mouse_pos, events):
+                    betslider = None
+                    submit_button = None
+                    cancel_button = None
+                    gui.redraw_screen(game, game.screen, clock)
+                    gui.create_cards(game, game.screen)
+                    gui.create_buttons(game)
+                    pygame.display.flip()
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if betslider.dragging:
+                    betslider.dragging = False
+            if betslider and betslider.dragging:
+                betslider.handle_drag(mouse_pos)
+                pygame.display.flip()
+                betslider.draw(game.screen)
+                pygame.display.flip()
+
+
     raise ValueError('no input received')
     return ('fold', 0)
 def resize_video(game:Game, screen, clock):
