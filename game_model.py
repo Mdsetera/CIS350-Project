@@ -263,6 +263,10 @@ class Player:
         self.pot_eligibility = 0
         self.winnings = 0
         self.all_in = False
+        self.seat_number = -1
+
+    def __str__(self):
+        return f'Player {self.seat_number}'
     @property
     def chips(self):
         return self._chips

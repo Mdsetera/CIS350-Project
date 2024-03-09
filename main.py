@@ -41,8 +41,9 @@ def main():
             take_bets(game)
             game.update_pot()
             if game.check_end_round():
+
                 winner = game.active_players[0]
-                game.end_round(winner)
+                game.end_round([winner])
                 pass
             print('heres the flop')
             gui.show_flop(game, game.screen)
@@ -51,6 +52,10 @@ def main():
             print('second round of bets')
             take_bets(game)
             game.update_pot()
+            if game.check_end_round():
+                winner = game.active_players[0]
+                game.end_round([winner])
+                pass
 
 
         pygame.display.flip()

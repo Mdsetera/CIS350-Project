@@ -9,6 +9,7 @@ window_start_Height = 750
 buttons = []
 labels_chip_count = []
 labels_player_bet = []
+label_pot = []
 
 class Color(Enum):
     GREEN = (0, 128, 0)
@@ -199,8 +200,11 @@ def create_labels(game):
         labels_chip_count.append(Label(label_text, 40, Color.BLUE, (5, 5+(40*num_labels)) ))
         label_bet_text = f'Player {game.seat.index(player)} Bet: {player.bet}'
         labels_player_bet.append(Label(label_bet_text, 40, Color.BLUE, (5, 450+(40*num_labels)) ))
+
     for label in labels_chip_count: label.draw(game.screen)
     for label in labels_player_bet: label.draw(game.screen)
+    label_pot.append(Label(f"Pot: 0", 40, Color.BLUE, (500, 400)))
+    label_pot[0].visible = False
 
 
 
@@ -208,7 +212,7 @@ def create_labels(game):
 def update_labels(game):
     #reset all labels used in the game
     #erase label text by redrawing
-    for label in labels_chip_count + labels_player_bet:
+    for label in labels_chip_count + labels_player_bet + label_pot:
         new = pygame.Surface(label.rect.size)
         new.fill(Color.GREEN.value)
         game.screen.blit(new, label.rect.topleft)
@@ -220,7 +224,11 @@ def update_labels(game):
         labels_chip_count[player_num].draw(game.screen)
         labels_player_bet[player_num].text = label_bet_text
         labels_player_bet[player_num].draw(game.screen)
-    #test visibility
+    total_pot = 0
+    for pot in game.pot: total_pot+=pot
+    label_pot[0].text = f'Pot: {total_pot}'
+    #if total_pot == 0: label_pot[0].visible = False
+    label_pot[0].draw(game.screen)
     pygame.display.flip()
 
 class Button():
