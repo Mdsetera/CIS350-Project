@@ -260,7 +260,7 @@ class Button():
         #mouse_pos = pygame.mouse.get_pos()
         x_Overbutton = self.x <= mouse_pos[0] <= self.x + self.width
         y_Overbutton = self.y <= mouse_pos[1] <= self.y + self.height
-        print(f'Hover check for button\'{self.text}\': {x_Overbutton and y_Overbutton}')
+        #print(f'Hover check for button\'{self.text}\': {x_Overbutton and y_Overbutton}')
         return x_Overbutton and y_Overbutton
 
     def check_click(self, mouse_pos, events):

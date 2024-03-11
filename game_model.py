@@ -77,14 +77,14 @@ class Game:
                     card = self.deck.stack.pop()
                     player.hand.append(card)
             for player in self.active_players:
-                print(player.hand)
+                print(player, "hand ->", player.hand)
 
             for x in range(5):
                 card = self.deck.stack.pop()
                 self.table_cards.append(card)
 
             gui.create_cards(self, self.screen)
-            print(self.table_cards)
+            print('Table cards', self.table_cards)
 
     def take_blinds(self):
         player_turn = self.dealer_seat + 1 if self.dealer_seat + 1 < len(self.seat) else 0
@@ -127,6 +127,12 @@ class Game:
             player.hand.append(self.table_cards[2])
         print('flop cards added')
 
+    def update_highest_bet(self):
+        big_bet = 0
+        for player in self.active_players:
+            if player.bet > big_bet:
+                big_bet = player.bet
+        self.highest_bet = big_bet
 
     def update_pot(self):
         for x in range(len(self.active_players)):
@@ -156,14 +162,16 @@ class Game:
     def next_player(self, current_player):
         #returns the player whos turn is next
         index = self.active_players.index(current_player)
-        if index == len(self.active_players) - 1:
+        if self.active_players[-1] == self.active_players[index]:
             return self.active_players[0]
         return self.active_players[index + 1]
 
     def equal_bets(self):
         #sent a list of players, returns True if all bets are equal to the highest bet
+        self.update_highest_bet()
+        print('equal bets? ->', self.active_players, "\nhighest bet ->", self.highest_bet)
         for player in self.active_players:
-            if player.bet != self.highest_bet and (player.all_in == False):
+            if player.bet != self.highest_bet and player.all_in == False:
                 return False
         return True
     def check_end_round(self) -> bool:
@@ -174,11 +182,13 @@ class Game:
         #recives a list of the winners of the round
         #splits the pot between the winners
         #gives money back to people with higher pot eligibility
+        print('round over')
+        ##splits the pot math
         eligibility = []
         for x in range(len(self.pot)):
             eligibility.append([])
-            for p in self.seat:
-                if p.pot_eligibility == x: eligibility[x].append(p)
+            for player in self.seat:
+                if player.pot_eligibility == x: eligibility[x].append(player)
             for player in winners:
                 if player in eligibility[x]:
                     player.chips += self.pot[x] / len(winners)
@@ -186,17 +196,20 @@ class Game:
             for player in eligibility[x]:
                 player.chips += self.pot[x] / len(eligibility[x])
                 self.pot[x] -= self.pot[x] / len(eligibility[x])
+        #reset all game values and player values
         self.pot = [0]
         self.active_players = []
         self.round += 1
+        self.bet_round = 0
         ##FIXME increase blinds when applicable
         self.dealer_seat += 1
         if self.dealer_seat == len(self.seat): self.dealer_seat = 0
-        self.bet_round = 0
         self.highest_bet = 0
         self.table_cards = []
         self.deck = Deck()
-        #FIXME remove everyones cards from their hand
+        for player in self.seat:
+            player.hand = []
+            player.bet = 0
     @property
     def dealer_seat(self):
         return self._dealer_seat
@@ -244,7 +257,7 @@ class Deck:
             self.stack.pop(x)
             num_cards -= 1
         self.stack = new_deck
-        print(f"Shuffled deck: {self.__repr__}")
+        #print(f"Shuffled deck: {self.__repr__}")
 
     def populate(self):
         #populates all cards into the deck, only used in __init__
@@ -289,6 +302,8 @@ class Player:
 
     def __str__(self):
         return f'Player {self.seat_number}'
+    def __repr__(self):
+        return f'Player[{self.seat_number}]'
     @property
     def chips(self):
         return self._chips
@@ -359,6 +374,7 @@ class Player:
             self.chips -= amount
 
         return True
+
 
 
     def get_bet_range(self, game:Game) -> (int,int):

@@ -1,3 +1,4 @@
+import copy
 import random
 import pygame
 from game_model import Game, Player, UserPlayer
@@ -40,11 +41,6 @@ def main():
             pygame.display.flip()
             take_bets(game)
             game.update_pot()
-            if game.check_end_round():
-
-                winner = game.active_players[0]
-                game.end_round([winner])
-                pass
             print('heres the flop')
             gui.show_flop(game, game.screen)
             game.add_flop_cards()
@@ -61,24 +57,32 @@ def main():
         pygame.display.flip()
 
     pygame.quit()
-def take_bets(game:Game):
+def take_bets(game:Game)->int:
+    #returns 0 if while loop is completed
+    #returns 1 if everyone folds before there are equal bets
     game.bet_round+=1
 
     while not game.equal_bets():
         for player in game.active_players:
+            print("before turn",  game.active_players)
             if type(player) is type(UserPlayer()):
                 player._play(game, get_player_input(game, player))
             else:
                 player._play(game)
             gui.update_labels(game)
+            print("after turn",  game.active_players)
             if game.equal_bets():
+                print('equal bets!!!!')
                 break
+
+
+
 
 
 def get_player_input(game: Game, player: Player) -> (int,int):
     #gets current player
     #return (move, bet_amount) ex. ('bet', 50)
-    print('getting input from player', game.seat.index(player)+1)
+    print('getting input from player', player.seat_number)
     gui.enable_buttons(game, player)
     input_received = False
     betslider = None
@@ -91,7 +95,7 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     countdown_time = 25
     font = pygame.font.Font(None, 55)
 
-    while(input_received == False):#FIXME turn this while loop into a timer, when timer ends return ('fold', 0)
+    while(input_received == False):
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
