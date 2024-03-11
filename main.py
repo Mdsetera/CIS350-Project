@@ -41,6 +41,10 @@ def main():
             pygame.display.flip()
             take_bets(game)
             game.update_pot()
+            if game.check_end_round():
+                winner = game.active_players[0]
+                game.end_round([winner])
+                continue
             print('heres the flop')
             gui.show_flop(game, game.screen)
             game.add_flop_cards()
@@ -51,7 +55,8 @@ def main():
             if game.check_end_round():
                 winner = game.active_players[0]
                 game.end_round([winner])
-                pass
+                continue
+
 
 
         pygame.display.flip()
@@ -63,17 +68,15 @@ def take_bets(game:Game)->int:
     game.bet_round+=1
 
     while not game.equal_bets():
-        for player in game.active_players:
-            print("before turn",  game.active_players)
-            if type(player) is type(UserPlayer()):
-                player._play(game, get_player_input(game, player))
-            else:
-                player._play(game)
-            gui.update_labels(game)
-            print("after turn",  game.active_players)
-            if game.equal_bets():
-                print('equal bets!!!!')
-                break
+        player = game.current_player
+        print("active players before turn",  game.active_players)
+        if type(player) is type(UserPlayer()):
+            player._play(game, get_player_input(game, player))
+        else:
+            #FIXME implement a small timer for the computer turns
+            player._play(game)
+        gui.update_labels(game)
+        print("active players after turn",  game.active_players)
 
 
 

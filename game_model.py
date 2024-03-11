@@ -161,11 +161,15 @@ class Game:
 
     def next_player(self, current_player):
         #returns the player whos turn is next
+        next_player = None
         index = self.active_players.index(current_player)
-        if self.active_players[-1] == self.active_players[index]:
-            return self.active_players[0]
-        return self.active_players[index + 1]
 
+        if self.active_players[-1] == self.active_players[index]:
+            next_player = self.active_players[0]
+        else:
+            next_player = self.active_players[index + 1]
+        print("player", current_player, "->", next_player)
+        return next_player
     def equal_bets(self):
         #sent a list of players, returns True if all bets are equal to the highest bet
         self.update_highest_bet()
