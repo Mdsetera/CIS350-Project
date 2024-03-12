@@ -12,7 +12,7 @@ def main():
     screen.fill((0, 128, 0))
     gui.create_buttons(game)
     gui.create_labels(game)
-    label_dealer = gui.Label(f"Dealer: Player {game.dealer_seat}", 20, gui.Color.BLUE.value, (5, 120))
+    label_dealer = gui.Label(f"Dealer: Player {game.dealer_seat}", 40, (0, 0, 0), (5, 5))
     label_dealer.draw(game.screen)
 
     running = True
@@ -31,7 +31,6 @@ def main():
                 gui.create_labels(game)
             elif event.type == pygame.FULLSCREEN:
                 print('fullscreened')
-
 
         while not game.check_end_game():
             game.start_round(game.screen)
@@ -57,11 +56,10 @@ def main():
                 game.end_round([winner])
                 continue
 
-
-
         pygame.display.flip()
 
     pygame.quit()
+
 def take_bets(game:Game)->int:
     #returns 0 if while loop is completed
     #returns 1 if everyone folds before there are equal bets
@@ -77,9 +75,6 @@ def take_bets(game:Game)->int:
             player._play(game)
         gui.update_labels(game)
         print("active players after turn",  game.active_players)
-
-
-
 
 
 def get_player_input(game: Game, player: Player) -> (int,int):
@@ -137,7 +132,7 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                 elif button.text == 'Call':
                     return ('call', 0)
                 elif button.text == 'Bet':
-                    betslider = gui.Slider(700, 500, 200, 20, 0, 1100, 10)
+                    betslider = gui.Slider(700, 500, 200, 20, 0, player.chips, 10)
                     submit_button = gui.Button(700, 460, 80, 30, "Submit Bet", 20, True)
                     cancel_button = gui.Button(800, 460, 80, 30, "Cancel", 20, True)
 
@@ -185,10 +180,13 @@ def get_player_input(game: Game, player: Player) -> (int,int):
             pygame.time.Clock().tick(60)
 
     pygame.time.set_timer(TIMEREVENT, 0)
-    raise ValueError('no input received')
+    #raise ValueError('no input received')
     return ('fold', 0)
+
+
 def resize_video(game:Game, screen, clock):
     pass
+
 
 if __name__ == '__main__':
     main()
