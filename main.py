@@ -1,8 +1,10 @@
 import copy
 import random
 import pygame
-from game_model import Game, Player, UserPlayer
 import poker_gui as gui
+from start_screen import start_screen
+from game_model import Game, Player, UserPlayer
+
 
 screen, clock = gui.init_pygame()
 def main():
@@ -189,4 +191,5 @@ def resize_video(game:Game, screen, clock):
 
 
 if __name__ == '__main__':
+    start_screen()
     main()
