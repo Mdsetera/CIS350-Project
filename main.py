@@ -101,7 +101,7 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     TIMEREVENT = pygame.USEREVENT + 1
     #create timer
     pygame.time.set_timer(TIMEREVENT, 1000)
-    countdown_time = 25
+    countdown_time = 1000 #length of the timer in seconds
     font = pygame.font.Font(None, 55)
 
     while(input_received == False):
@@ -143,7 +143,8 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                 elif button.text == 'Call' and button.enabled:
                     return ('call', 0)
                 elif button.text == 'Bet' and button.enabled:
-                    betslider = gui.Slider(700, 500, 200, 20, 0, player.chips, 10)
+                    range = player.get_bet_range(game)
+                    betslider = gui.Slider(700, 500, 200, 20, range[0], range[1], 10)
                     submit_button = gui.Button(700, 460, 80, 30, "Submit Bet", 20, True)
                     cancel_button = gui.Button(800, 460, 80, 30, "Cancel", 20, True)
 

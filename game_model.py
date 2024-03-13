@@ -397,9 +397,12 @@ class Player:
         highest_chip_count = 0
         second_highest_chip_count = 0
         for player in game.active_players:
-            if player.chips > highest_chip_count:
+
+            if player.chips >= highest_chip_count:
                 second_highest_chip_count = highest_chip_count
                 highest_chip_count = player.chips
+            elif player.chips > second_highest_chip_count:
+                second_highest_chip_count = player.chips
             if player.bet > highest_bet: highest_bet = player.bet
             game.highest_bet = highest_bet
         max_bet = 0

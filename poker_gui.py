@@ -332,10 +332,12 @@ class Slider:
         self.height = height
         self.minimum = minimum
         self.maximum = maximum
+        self.width = ((maximum - minimum) / step) * 3
+        self.x -= self.width
         self.step = step
         self.value = minimum
-        self.slider_rect = pygame.Rect(x, y + height // 3, width, height // 3)
-        self.pointer_rect = pygame.Rect(x, y, 20, height)
+        self.slider_rect = pygame.Rect(self.x, self.y + height // 3, self.width, height // 3)
+        self.pointer_rect = pygame.Rect(self.x+self.width, y, 20, height)
         self.dragging = False
 
     def draw(self, screen):
@@ -348,6 +350,7 @@ class Slider:
         #draw value
         font = pygame.font.Font(None, 24)
         text = font.render(str(self.value), True, (0, 0, 0))
+
         screen.blit(text, (self.x + self.width // 2, self.y + self.height + 5))
 
     def handle_click(self, mouse_pos):
@@ -357,14 +360,15 @@ class Slider:
 
     def handle_drag(self, mouse_pos):
         if self.dragging:
-            mouse_x, mouse_y =  mouse_pos
+            mouse_x, mouse_y = mouse_pos
 
-            pointer_x = max(self.x, min(mouse_x - self.pointer_rect.width // 2, self.x + self.width
-                                        - self.pointer_rect.width))
+            pointer_x = max(self.x, min(mouse_x - self.pointer_rect.width // 2, self.x + self.width))
             self.pointer_rect.x = pointer_x
 
-            normal_pos = (pointer_x - self.x) / self.width
-            self.value = int(self.minimum + normal_pos * (self.maximum - self.minimum) / self.step) * self.step
+            # Calculate the position of the pointer relative to the slider's width
+            relative_pos = 1 - ((pointer_x - self.x) / self.width)
+            # Update the value accordingly
+            self.value = int(relative_pos * (self.maximum - self.minimum) / self.step) * self.step + self.minimum
 
     def handle_release(self):
         self.dragging = False
