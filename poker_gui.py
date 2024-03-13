@@ -10,11 +10,15 @@ buttons = []
 labels_chip_count = []
 labels_player_bet = []
 label_pot = []
+label_dealer = []
+label_current_player_turn = []
 
 class Color(Enum):
     GREEN = (0, 128, 0)
     BLUE = (0,255,0)
     RED = (255,0,0)
+    WHITE = (255,255,255)
+    BLACK = (0,0,0)
 ##method()
 def init_pygame():
     pygame.init()
@@ -32,36 +36,21 @@ def init_pygame():
 def show_flop(game, screen):
     #print(game.table_cards)
     #once first round of betting is over  (so like preflop)
-    if game.round == 1:
-        flop_1 = game.table_cards[0]
-        flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
-        flip_card1.midbottom = (380, 325)
-        screen.blit(flop_1.back_image, flip_card1)
+    flop_1 = game.table_cards[0]
+    flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
+    flip_card1.midbottom = (380, 325)
+    screen.blit(flop_1.front_image, flip_card1)
 
-        flop_2 = game.table_cards[1]
-        flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
-        flip_card2.midbottom = (440, 325)
-        screen.blit(flop_2.back_image, flip_card2)
+    flop_2 = game.table_cards[1]
+    flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
+    flip_card2.midbottom = (440, 325)
+    screen.blit(flop_2.front_image, flip_card2)
 
-        flop_3 = game.table_cards[2]
-        flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
-        flip_card3.midbottom = (500, 325)
-        screen.blit(flop_3.back_image, flip_card3)
-    elif game.round == 2:
-        flop_1 = game.table_cards[0]
-        flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
-        flip_card1.midbottom = (380, 325)
-        screen.blit(flop_1.front_image, flip_card1)
+    flop_3 = game.table_cards[2]
+    flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
+    flip_card3.midbottom = (500, 325)
+    screen.blit(flop_3.front_image, flip_card3)
 
-        flop_2 = game.table_cards[1]
-        flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
-        flip_card2.midbottom = (440, 325)
-        screen.blit(flop_2.front_image, flip_card2)
-
-        flop_3 = game.table_cards[2]
-        flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
-        flip_card3.midbottom = (500, 325)
-        screen.blit(flop_3.front_image, flip_card3)
 
 
 
@@ -197,6 +186,17 @@ def enable_buttons(game, player):
 
 
 def create_labels(game):
+    global labels_chip_count,labels_player_bet, label_pot, label_dealer, label_current_player_turn
+    labels_chip_count = []
+    labels_player_bet = []
+    label_pot = []
+    label_dealer = []
+    label_current_player_turn = []
+
+    l_dealer = Label(f"Dealer: Player {game.dealer_seat}", 40, (0, 0, 0), (5, 5))
+    l_dealer.draw(game.screen)
+    label_dealer.append(l_dealer)
+
     label0_text = f'Player 0 Balance: {int(game.seat[0].chips)}'
     label0_bet_text = f'Player 0 Bet: {int(game.seat[0].bet)}'
     #Player 0 labels
@@ -256,7 +256,15 @@ def create_labels(game):
     chip2_player2.draw(game.screen)
 
     label_pot.append(Label(f"Pot: 0", 40, Color.RED, (430, 370)))
-    label_pot[0].visible = False
+    total_pot = 0
+    for pot in game.pot:
+        total_pot += pot
+    label_pot[0].text = f'Pot: {total_pot}'
+    #label_pot[0].visible = total_pot > 0 #toggle visibility
+    label_pot[0].draw(game.screen)
+
+    label_current_player_turn.append(Label(f'{game.current_player}\'s turn', 40, Color.BLACK, (5, 40)))
+    label_current_player_turn[0].draw(game.screen)
 
     pygame.display.flip()
 
@@ -264,18 +272,14 @@ def create_labels(game):
 def update_labels(game):
     #reset all labels used in the game
     #erase label text by redrawing
-    for label in labels_chip_count + labels_player_bet + label_pot:
+    for label in labels_chip_count + labels_player_bet + label_pot + label_dealer + label_current_player_turn:
         new = pygame.Surface(label.rect.size)
         new.fill(Color.GREEN.value)
         game.screen.blit(new, label.rect.topleft)
     #set labels to new text
     create_labels(game)
-    total_pot = 0
-    for pot in game.pot:
-        total_pot += pot
-    label_pot[0].text = f'Pot: {total_pot}'
-    #if total_pot == 0: label_pot[0].visible = False
-    label_pot[0].draw(game.screen)
+
+
     pygame.display.flip()
 
 

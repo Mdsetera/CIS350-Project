@@ -14,8 +14,7 @@ def main():
     screen.fill((0, 128, 0))
     gui.create_buttons(game)
     gui.create_labels(game)
-    label_dealer = gui.Label(f"Dealer: Player {game.dealer_seat}", 40, (0, 0, 0), (5, 5))
-    label_dealer.draw(game.screen)
+
 
     running = True
     while running:
@@ -42,7 +41,9 @@ def main():
             pygame.display.flip()
             take_bets(game)
             game.update_pot()
+            gui.update_labels(game)
             if game.check_end_round():
+                gui.update_labels(game)
                 winner = game.active_players[0]
                 game.end_round([winner])
                 continue
@@ -53,10 +54,12 @@ def main():
             print('second round of bets')
             take_bets(game)
             game.update_pot()
+            gui.update_labels(game)
             if game.check_end_round():
                 winner = game.active_players[0]
                 game.end_round([winner])
                 continue
+            print('end of game loop')
 
         pygame.display.flip()
 
@@ -66,8 +69,9 @@ def take_bets(game:Game)->int:
     #returns 0 if while loop is completed
     #returns 1 if everyone folds before there are equal bets
     game.bet_round+=1
-
-    while not game.equal_bets():
+    gui.update_labels(game)
+    game.update_highest_bet()
+    while (not game.equal_bets()) or game.highest_bet == 0:
         player = game.current_player
         print("active players before turn",  game.active_players)
         if type(player) is type(UserPlayer()):
@@ -127,13 +131,13 @@ def get_player_input(game: Game, player: Player) -> (int,int):
         #events = pygame.event.get()
         for button in gui.buttons:
             if button.check_click(mouse_pos, events):
-                if button.text == "Fold":
+                if button.text == "Fold" and button.enabled:
                     return ('fold', 0)
-                elif button.text == "Check":
+                elif button.text == "Check" and button.enabled:
                     return ('check', 0)
-                elif button.text == 'Call':
+                elif button.text == 'Call' and button.enabled:
                     return ('call', 0)
-                elif button.text == 'Bet':
+                elif button.text == 'Bet' and button.enabled:
                     betslider = gui.Slider(700, 500, 200, 20, 0, player.chips, 10)
                     submit_button = gui.Button(700, 460, 80, 30, "Submit Bet", 20, True)
                     cancel_button = gui.Button(800, 460, 80, 30, "Cancel", 20, True)

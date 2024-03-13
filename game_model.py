@@ -90,6 +90,7 @@ class Game:
         player_turn = self.dealer_seat + 1 if self.dealer_seat + 1 < len(self.seat) else 0
         self.current_player = self.seat[player_turn]
         if self.current_player in self.active_players:
+            if self.current_player.bet != 0: raise ValueError('player.bet should be zero')
             if len(self.active_players) == 2:
                 self.handle_big_blind(self.current_player)
                 self.current_player = self.next_player(self.current_player)
@@ -157,6 +158,8 @@ class Game:
             #increment pot eligibility
             for player in players_with_bets:
                 player.pot_eligibility += 1
+        for player in self.active_players:
+            if player.bet > 0: raise ValueError(f"{player}'s bet: {player.bet}(should be zero)")
         print('pot updated')
 
     def next_player(self, current_player):
@@ -172,7 +175,6 @@ class Game:
         return next_player
     def equal_bets(self):
         #sent a list of players, returns True if all bets are equal to the highest bet
-        self.update_highest_bet()
         print('equal bets? ->', self.active_players, "\nhighest bet ->", self.highest_bet)
         for player in self.active_players:
             if player.bet != self.highest_bet and player.all_in == False:
@@ -355,7 +357,7 @@ class Player:
             moves["call"] = True
 
         range = self.get_bet_range(game)
-        if range[0] > range[1]:
+        if (self.bet + self.chips) < range[0]:
             moves["bet"] = False
         else:
             moves["bet"] = True
@@ -388,12 +390,15 @@ class Player:
         :param game:
         :return: (int, int)
         """
+        highest_bet = 0
         highest_chip_count = 0
         second_highest_chip_count = 0
         for player in game.active_players:
             if player.chips > highest_chip_count:
                 second_highest_chip_count = highest_chip_count
                 highest_chip_count = player.chips
+            if player.bet > highest_bet: highest_bet = player.bet
+            game.highest_bet = highest_bet
         max_bet = 0
         if self.chips == highest_chip_count:
             max_bet = second_highest_chip_count
