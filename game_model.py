@@ -179,6 +179,7 @@ class Game:
         for player in self.active_players:
             if player.bet != self.highest_bet and player.all_in == False:
                 return False
+        print('equal bets!!!')
         return True
     def check_end_round(self) -> bool:
         if len(self.active_players) == 1:
@@ -346,12 +347,14 @@ class Player:
         moves = {"fold": True, "check": False, "call": False, "bet": False}
         if self.all_in:
             return {"fold": False, "check": False, "call": False, "bet": False}
-        if game.highest_bet > 0:
+        if game.highest_bet == self.bet:
+            moves["check"] = True
+        elif game.highest_bet > 0:
             moves["check"] = False
         else:
             moves["check"] = True
 
-        if self.chips == 0:
+        if self.chips == 0 or game.highest_bet == 0 or self.bet == game.highest_bet:
             moves["call"] = False
         else:
             moves["call"] = True

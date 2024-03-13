@@ -71,14 +71,19 @@ def take_bets(game:Game)->int:
     game.bet_round+=1
     gui.update_labels(game)
     game.update_highest_bet()
-    while (not game.equal_bets()) or game.highest_bet == 0:
+    turn_not_taken = []
+    everyone_took_turn = False
+    for player in game.active_players: turn_not_taken.append(player)
+    while not (game.equal_bets() and not turn_not_taken):
+
         player = game.current_player
-        print("active players before turn",  game.active_players)
         if type(player) is type(UserPlayer()):
             player._play(game, get_player_input(game, player))
         else:
             #FIXME implement a small timer for the computer turns
             player._play(game)
+        if player in turn_not_taken: turn_not_taken.remove(player)
+        print(f'turn not taken -> {turn_not_taken}')
         gui.update_labels(game)
         print("active players after turn",  game.active_players)
 
