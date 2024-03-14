@@ -127,6 +127,12 @@ class Game:
             player.hand.append(self.table_cards[1])
             player.hand.append(self.table_cards[2])
         print('flop cards added')
+    def add_turn_cards(self):
+        for player in self.active_players: player.hand.append(self.table_cards[3])
+        print('turn card added')
+    def add_river_cards(self):
+        for player in self.active_players: player.hand.append(self.table_cards[-1])
+        print('river card added')
 
     def update_highest_bet(self):
         big_bet = 0
@@ -247,6 +253,7 @@ class Game:
         #compares the hands of each of the players
         #returns list of player(s) with best hand
         #FIXME build this method
+
         return [player[0]]
 class Deck:
     def __init__(self):
@@ -273,6 +280,7 @@ class Deck:
             self.stack.append(Card(x,Suit.DIAMONDS, "Images/card" + "Diamonds" + str(x) + ".png"))
             self.stack.append(Card(x,Suit.SPADES, "Images/card" + "Spades" + str(x) + ".png"))
             self.stack.append(Card(x,Suit.CLUBS, "Images/card" + "Clubs" + str(x) + ".png"))
+
     def __repr__(self):
         my_str = ""
         for card in self.stack:
@@ -295,6 +303,12 @@ class Card:
 
     def __repr__(self):
         return f'{self.value},{self.suit},'
+    def __lt__(self, other):
+        return self.value < other.value
+    def __gt__(self, other):
+        return self.value > other.value
+    def __eq__(self, other):
+        return self.value == other.value
 
 class Player:
     def __init__(self):

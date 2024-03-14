@@ -32,7 +32,7 @@ def main():
                 gui.create_labels(game)
             elif event.type == pygame.FULLSCREEN:
                 print('fullscreened')
-
+#vvvvvvvvvvvvvvvvv The GAME LOOP vvvvvvvvvvvvvvvvv#
         while not game.check_end_game():
             game.start_round(game.screen)
             game.deal_initial_cards()
@@ -59,8 +59,36 @@ def main():
                 winner = game.active_players[0]
                 game.end_round([winner])
                 continue
-            print('end of game loop')
+            print('heres the turn')
+            gui.show_turn(game, game.screen)
+            game.add_turn_cards()
+            print('third round of bets')
+            take_bets(game)
+            game.update_pot()
+            gui.update_labels(game)
+            if game.check_end_round():
+                winner = game.active_players[0]
+                game.end_round([winner])
+                continue
+            print('heres the river')
+            gui.show_river(game, game.screen)
+            game.add_river_cards()
+            print('last round of bets')
+            take_bets(game)
+            game.update_pot()
+            gui.update_labels(game)
+            if game.check_end_round():
+                winner = game.active_players[0]
+                game.end_round([winner])
+                continue
+            print('comparing hands and selecting winner')
+            winners = game.compare_hands(game.active_players)
+            game.end_round(winners)
 
+
+
+            print('end of game loop')
+#^^^^^^^^^^^^^^^ The GAME LOOP ^^^^^^^^^^^^^^^#
         pygame.display.flip()
 
     pygame.quit()
@@ -86,6 +114,7 @@ def take_bets(game:Game)->int:
         print(f'turn not taken -> {turn_not_taken}')
         gui.update_labels(game)
         print("active players after turn",  game.active_players)
+
 
 
 def get_player_input(game: Game, player: Player) -> (int,int):
@@ -195,8 +224,7 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     #raise ValueError('no input received')
     return ('fold', 0)
 
-
-def resize_video(game:Game, screen, clock):
+def delay(num_seconds:int):
     pass
 
 
