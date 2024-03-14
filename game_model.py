@@ -15,6 +15,7 @@ from enum import Enum
 
 import pygame
 import poker_gui as gui
+import hand_rank_tests as rank
 
 
 class Suit(Enum):
@@ -248,11 +249,23 @@ class Game:
             return True
         else:
             return False
-    def compare_hands(self, player:list)->list:
+    def compare_hands(self, players:list)->list:
         #recieves a list of players
         #compares the hands of each of the players
         #returns list of player(s) with best hand
         #FIXME build this method
+        best_hand_rank = -1
+        hand_rank = {}
+        for player in players:
+            hand_rank[player], player.hand = rank.get_hand_rank(player.hand)
+            if hand_rank[player] > best_hand_rank: best_hand_rank = hand_rank[player]
+        compare = [player for player in hand_rank if hand_rank[player] == best_hand_rank]
+        if len(compare) == 1:
+            return compare[0]
+        if len(compare) == 0:
+            raise ValueError('there must be a winner')
+        else:
+            pass
 
         return [player[0]]
 class Deck:
