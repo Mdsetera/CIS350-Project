@@ -102,7 +102,7 @@ def take_bets(game:Game)->int:
     turn_not_taken = []
     everyone_took_turn = False
     for player in game.active_players: turn_not_taken.append(player)
-    while not (game.equal_bets() and not turn_not_taken):
+    while not (game.equal_bets() and not turn_not_taken) and len(game.active_players) > 1:
 
         player = game.current_player
         if type(player) is type(UserPlayer()):
@@ -146,6 +146,7 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                 pygame.display.flip()
                 gui.redraw_screen(game, screen, clock)
                 gui.create_cards(game, screen)
+                gui.update_labels(game)
             elif event.type == TIMEREVENT:
                 countdown_time -= 1
                 if countdown_time <= 0:
@@ -223,6 +224,7 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     pygame.time.set_timer(TIMEREVENT, 0)
     #raise ValueError('no input received')
     return ('fold', 0)
+
 
 def delay(num_seconds:int):
     pass

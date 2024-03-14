@@ -15,7 +15,7 @@ from enum import Enum
 
 import pygame
 import poker_gui as gui
-import hand_rank_tests as rank
+
 
 
 class Suit(Enum):
@@ -224,6 +224,7 @@ class Game:
         for player in self.seat:
             player.hand = []
             player.bet = 0
+            player.fold = False
     @property
     def dealer_seat(self):
         return self._dealer_seat
@@ -250,24 +251,36 @@ class Game:
         else:
             return False
     def compare_hands(self, players:list)->list:
+        import hand_rank_tests as rank
         #recieves a list of players
         #compares the hands of each of the players
         #returns list of player(s) with best hand
         #FIXME build this method
         best_hand_rank = -1
         hand_rank = {}
+        print('finding hand ranks')
         for player in players:
             hand_rank[player], player.hand = rank.get_hand_rank(player.hand)
             if hand_rank[player] > best_hand_rank: best_hand_rank = hand_rank[player]
         compare = [player for player in hand_rank if hand_rank[player] == best_hand_rank]
         if len(compare) == 1:
-            return compare[0]
-        if len(compare) == 0:
+            return [compare[0]]
+        elif len(compare) == 0:
             raise ValueError('there must be a winner')
         else:
-            pass
+            print('comparing hands with the same rank')
+            for x in range(len(compare[0].hand)):
+                player_ranked = sorted(compare, key=lambda player: player.hand[x], reverse=True)
+                best_card = player_ranked[0].hand[x]
+                best_players = []
+                for player in player_ranked:
+                    if player.hand[x].value == best_card.value:
+                        best_players.append(player)
+                compare = best_players
+                if len(compare) == 0:
+                    raise ValueError('There must be at least one winner')
+            return compare
 
-        return [player[0]]
 class Deck:
     def __init__(self):
         self.stack = []
@@ -333,6 +346,7 @@ class Player:
         self.winnings = 0
         self.all_in = False
         self.seat_number = -1
+        self.fold = False
 
     def __str__(self):
         return f'Player {self.seat_number}'
@@ -448,6 +462,7 @@ class Player:
 
         game.pot[self.pot_eligibility] += self.bet
         self.pot_eligibility = -1
+        self.fold = True
         game.active_players.remove(self)
     def _call(self, game:Game):
         """
