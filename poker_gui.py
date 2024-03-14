@@ -267,14 +267,14 @@ def create_labels(game):
     label_current_player_turn[0].draw(game.screen)
 
     label_fold = []
-    print("Players in seats ->", game.seat)
-    print(f"[{game.seat[0].fold},{game.seat[1].fold},{game.seat[2].fold}]")
-    label_fold.append(Label('FOLD', 60, Color.BLACK, (405+10,585+30), visible = game.seat[0].fold))
+    #print("Players in seats ->", game.seat)
+    #print(f"[{game.seat[0].fold},{game.seat[1].fold},{game.seat[2].fold}]")
+    label_fold.append(Label('FOLD', 60, Color.BLACK, (5+10,200+30), visible = game.seat[0].fold))
     label_fold[0].rotate(20)
 
     label_fold[0].draw(game.screen)
 
-    label_fold.append(Label('FOLD', 60, Color.BLACK, (5+10,200+30), visible = game.seat[1].fold))
+    label_fold.append(Label('FOLD', 60, Color.BLACK, (405+10,585+30), visible = game.seat[1].fold))
     label_fold[1].rotate(20)
     label_fold[1].draw(game.screen)
 
@@ -283,6 +283,21 @@ def create_labels(game):
     label_fold[2].draw(game.screen)
 
     print(f'{label_fold[0].visible},{label_fold[1].visible},{label_fold[2].visible}')
+
+    label_player_all_in = []
+    label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (5+10,200+30), visible = game.seat[0].all_in))
+    label_player_all_in[0].rotate(20)
+    label_player_all_in[0].draw(game.screen)
+
+    label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (405+10,585+30), visible = game.seat[1].all_in))
+    label_player_all_in[1].rotate(20)
+    label_player_all_in[1].draw(game.screen)
+
+    label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (840+10,200+30), visible = game.seat[2].all_in))
+    label_player_all_in[2].rotate(20)
+    label_player_all_in[2].draw(game.screen)
+
+
 
     pygame.display.flip()
 

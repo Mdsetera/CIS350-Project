@@ -94,8 +94,9 @@ def main():
             if player.chips > 0:
                 if winner != None: raise ValueError('cannot have two winners')
                 winner = player
+                print('winner is', player.__str__())
+                gui.print_winner(player)
                 break
-        gui.print_winner(winner)
         pygame.time.delay(5000)
         pygame.quit()
         exit()
@@ -136,7 +137,8 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     TIMEREVENT = pygame.USEREVENT + 1
     #create timer
     pygame.time.set_timer(TIMEREVENT, 1000)
-    countdown_time = 1000 #length of the timer in seconds
+    countdown_time = 10 #length of the timer in seconds
+    num_time_passed = 0
     font = pygame.font.Font(None, 55)
 
     while(input_received == False):
@@ -155,9 +157,13 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                 gui.update_labels(game)
             elif event.type == TIMEREVENT:
                 countdown_time -= 1
+                num_time_passed += 1
+                #print(num_time_passed)
                 if countdown_time <= 0:
                     input_received = True
                     return ('fold', 0)
+                elif num_time_passed >= 3 and player.all_in:
+                    return ('check', 0)
 
         #create rect to clear the timer space before incrementing countdown to prevent overlapping
         timer_rect = pygame.Rect(460, 25, 100, 55)

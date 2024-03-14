@@ -210,6 +210,8 @@ class Game:
             for player in eligibility[x]:
                 player.chips += self.pot[x] / len(eligibility[x])
                 self.pot[x] -= self.pot[x] / len(eligibility[x])
+        for player in self.seat:
+            print(f'{player.__str__()} chips: {player.chips}', end=" ")
         #reset all game values and player values
         self.pot = [0]
         self.active_players = []
@@ -369,7 +371,7 @@ class Player:
         Will control each turn that the player takes
         player input = {"fold":_fold, "check":_call, "call":_call, "bet":_bet}
         """
-        move = {"fold":self._fold, "check":self._call, "call":self._call, "bet":self._bet}
+        move = {"fold":self._fold, "check":self._check, "call":self._call, "bet":self._bet}
         game.current_player = game.next_player(game.current_player)#switches player before they make a move because fold removes them from active players
         if not self.all_in:
             if input[0].lower() == 'bet':
@@ -422,7 +424,7 @@ class Player:
         else:
             self.bet += amount
             self.chips -= amount
-
+            if self.chips == 0: self.all_in = True
         return True
 
 
@@ -439,15 +441,15 @@ class Player:
         second_highest_chip_count = 0
         for player in game.active_players:
 
-            if player.chips >= highest_chip_count:
+            if player.chips + player.bet >= highest_chip_count:
                 second_highest_chip_count = highest_chip_count
-                highest_chip_count = player.chips
-            elif player.chips > second_highest_chip_count:
-                second_highest_chip_count = player.chips
+                highest_chip_count = player.chips + player.bet
+            elif player.chips + player.bet > second_highest_chip_count:
+                second_highest_chip_count = player.chips + player.bet
             if player.bet > highest_bet: highest_bet = player.bet
             game.highest_bet = highest_bet
         max_bet = 0
-        if self.chips == highest_chip_count:
+        if self.chips + self.bet == highest_chip_count:
             max_bet = second_highest_chip_count
         else:
             max_bet = self.chips
@@ -455,6 +457,8 @@ class Player:
         min_bet = game.highest_bet + game.big_blind
 
         return min_bet, max_bet
+    def _check(self, game:Game):
+        pass
     def _fold(self, game:Game):
         """
         player ends involvement in the round and forfeits eligibility to the pot
@@ -479,6 +483,7 @@ class Player:
             self.chips += self.bet
             self.bet = game.highest_bet
             self.chips -= self.bet
+            if self.chips == 0: self.all_in = True
     def check_hand_rank(self, hand:list[Card]) -> None:
         """
         given a hand of cards, returns the type of hand
