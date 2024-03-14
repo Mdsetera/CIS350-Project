@@ -300,7 +300,10 @@ def update_labels(game):
 
     pygame.display.flip()
 
-
+def print_winner(screen, winner):
+    winner_label = Label(f'{winner.__str__()} is the winner!!!', 100, Color.WHITE, (5,400))
+    winner_label.draw(screen)
+    pygame.display.flip()
 class Button:
     def __init__(self, x, y, width, height, text, font_size=20, enabled=True):
         self.text = text

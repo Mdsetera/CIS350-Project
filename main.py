@@ -21,6 +21,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                pygame.quit()
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 gui.change_dimensions(game, event.w, event.h)
@@ -84,15 +85,20 @@ def main():
             print('comparing hands and selecting winner')
             winners = game.compare_hands(game.active_players)
             game.end_round(winners)
-
-
-
-            print('end of game loop')
+        running = False
+        print('game loop has ended')
 #^^^^^^^^^^^^^^^ The GAME LOOP ^^^^^^^^^^^^^^^#
         pygame.display.flip()
-
-    pygame.quit()
-
+        winner = None
+        for player in game.seat:
+            if player.chips > 0:
+                if winner != None: raise ValueError('cannot have two winners')
+                winner = player
+                break
+        gui.print_winner(winner)
+        pygame.time.delay(5000)
+        pygame.quit()
+        exit()
 def take_bets(game:Game)->int:
     #returns 0 if while loop is completed
     #returns 1 if everyone folds before there are equal bets
