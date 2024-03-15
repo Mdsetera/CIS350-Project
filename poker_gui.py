@@ -14,6 +14,9 @@ label_dealer = []
 label_current_player_turn = []
 label_player_hands = []
 class Color(Enum):
+    """
+    holds (R,G,B) values for different colors
+    """
     GREEN = (0, 128, 0)
     BLUE = (0,0,255)
     LGREEN = (0, 255, 0)
@@ -22,6 +25,10 @@ class Color(Enum):
     BLACK = (0,0,0)
 ##method()
 def init_pygame():
+    """
+    initializes the game window
+    :return:
+    """
     pygame.init()
     global window_start_Width, window_start_Height
     screen = pygame.display.set_mode((window_start_Width, window_start_Height), pygame.RESIZABLE)
@@ -32,9 +39,15 @@ def init_pygame():
 
     return screen, clock
 
-# Define a function to create text surface and rect
+
 
 def show_flop(game, screen):
+    """
+    draws the first three shared cards of the round on the screen
+    :param game:
+    :param screen:
+    :return:
+    """
     #print(game.table_cards)
     #once first round of betting is over  (so like preflop)
     flop_1 = game.table_cards[0]
@@ -56,6 +69,12 @@ def show_flop(game, screen):
 
 
 def show_turn(game, screen):
+    """
+    draws the 4th shared card of the round on the screen
+    :param game:
+    :param screen:
+    :return:
+    """
     turn_card = game.table_cards[3]
     flip_turn = pygame.Rect(0, 0, turn_card.width, turn_card.height)
     flip_turn.midbottom = (560, 325)
@@ -64,6 +83,12 @@ def show_turn(game, screen):
 
 
 def show_river(game, screen):
+    """
+    draws the 5th shared card of the round on the screen
+    :param game:
+    :param screen:
+    :return:
+    """
     river_card = game.table_cards[-1]
     flip_river = pygame.Rect(0, 0, river_card.width, river_card.height)
     flip_river.midbottom = (620, 325)
@@ -72,7 +97,12 @@ def show_river(game, screen):
 
 #Card Sizes & Position
 def create_cards(game, screen):
-
+    """
+    creates and draws all cards for all players on the screen
+    :param game:
+    :param screen:
+    :return:
+    """
     if game.bet_round >= 2:
         show_flop(game, screen)
     if game.bet_round >= 3:
@@ -121,6 +151,13 @@ def create_cards(game, screen):
 
 
 def change_dimensions(game, new_Width, new_Height):
+    """
+    receives a new width and height and redraws the window and screen with the new dimensions
+    :param game:
+    :param new_Width:
+    :param new_Height:
+    :return:
+    """
     global window_start_Width, window_start_Height
 
     x_scale = new_Width / window_start_Width
@@ -143,6 +180,13 @@ def change_dimensions(game, new_Width, new_Height):
 
 
 def update(game, screen, clock):
+    """
+    function used to redraw all the current shared cards
+    :param game:
+    :param screen:
+    :param clock:
+    :return:
+    """
     if game.bet_round == 2:
         show_flop(game, screen)
     elif game.bet_round == 3:
@@ -154,12 +198,24 @@ def update(game, screen, clock):
 
 
 def redraw_screen(game, screen, clock):
+    """
+    redraws the screen
+    :param game:
+    :param screen:
+    :param clock:
+    :return:
+    """
     screen.fill(Color.GREEN.value)
     update(game, screen, clock)
     pygame.display.flip()
 
 
 def create_buttons(game):
+    """
+    creates and draws all main 4 buttons onto the screen
+    :param game:
+    :return:
+    """
     fold_button = Button(600, 550, 100, 50, "Fold", 30, False)
     check_button = Button(710, 550, 100, 50, "Check", 30, False)
     call_button = Button(600, 610, 100, 50, "Call", 30, False)
@@ -172,6 +228,13 @@ def create_buttons(game):
 
 
 def enable_buttons(game, player):
+    """
+    recieves a player, and enables/disables buttons
+    based on what moves the player is allowed to make
+    :param game:
+    :param player:
+    :return:
+    """
     moves = player.get_moves(game)
     for button in buttons:
         button.enabled = False
@@ -188,6 +251,12 @@ def enable_buttons(game, player):
 
 
 def create_labels(game):
+    """
+    creates and draws all labels
+    that the user will use to keep track of the game state
+    :param game:
+    :return:
+    """
     import hand_rank_tests as rank
     global labels_chip_count,labels_player_bet, label_pot, label_dealer, label_current_player_turn
     labels_chip_count = []
@@ -324,6 +393,12 @@ def create_labels(game):
 
 
 def update_labels(game):
+    """
+    takes all the labels and fills them with the background color (Green)
+    so that they can be redrawn with their new text values
+    :param game:
+    :return:
+    """
     #reset all labels used in the game
     #erase label text by redrawing
     for label in labels_chip_count + labels_player_bet + label_pot + label_dealer + label_current_player_turn + label_player_hands:
@@ -337,6 +412,14 @@ def update_labels(game):
     pygame.display.flip()
 
 def print_winner(screen, winner):
+    """
+    current way to end the game
+    just makes a big label
+    declaring who won that game
+    :param screen:
+    :param winner:
+    :return:
+    """
     winner_label = Label(f'{winner.__str__()} is the winner!!!', 100, Color.WHITE, (100,330))
     winner_label.draw(screen)
     pygame.display.flip()
@@ -362,6 +445,11 @@ class Button:
             if value:
                 self._visible = value
     def remove(self, screen):
+        """
+        fills the button surface with the color green
+        :param screen:
+        :return:
+        """
         new = pygame.Surface((self.width, self.height))
         new.fill(Color.GREEN.value)
         screen.blit(new, (self.x, self.y))
@@ -381,6 +469,8 @@ class Button:
             screen.blit(button_text, text_rect)
 
     def check_hover(self, mouse_pos):
+        #checks is mouse position is hovering over the button
+        #returns true if it is
         #mouse_pos = pygame.mouse.get_pos()
         x_Overbutton = self.x <= mouse_pos[0] <= self.x + self.width
         y_Overbutton = self.y <= mouse_pos[1] <= self.y + self.height
@@ -388,6 +478,8 @@ class Button:
         return x_Overbutton and y_Overbutton
 
     def check_click(self, mouse_pos, events):
+        #checks if button was clicked
+        #returns true if it was
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.check_hover(mouse_pos):
@@ -414,7 +506,7 @@ class Slider:
 
 
     def draw(self, screen):
-        #draw slider bar
+        #draws slider bar
         pygame.draw.rect(screen, (200, 200, 200), self.slider_rect)
         #draw slider pointer
         pygame.draw.rect(screen, (0, 0, 0), self.pointer_rect)
@@ -427,11 +519,13 @@ class Slider:
         screen.blit(text, (self.x + self.width // 2, self.y + self.height + 5))
 
     def handle_click(self, mouse_pos):
+        #checks if slider pointer wsa clicked
         mouse_x, mouse_y = mouse_pos
         if self.pointer_rect.collidepoint(mouse_x, mouse_y):
             self.dragging = True
 
     def handle_drag(self, mouse_pos):
+        #modifies the value of the slider depending on where the slider is dragged
         if self.dragging:
             mouse_x, mouse_y = mouse_pos
 
@@ -444,9 +538,11 @@ class Slider:
             self.value = int(relative_pos * (self.maximum - self.minimum) / self.step) * self.step + self.minimum
 
     def handle_release(self):
+        #stops drag when you stop clicking the slider
         self.dragging = False
 
     def move_slider(self, mouse_pos):
+        #moves the slider pointer as the user draggs it
         self.pointer_rect.centerx = mouse_pos[0]
 
 
@@ -524,14 +620,17 @@ class Label:
             raise ValueError("Visibility must be a boolean")
 
     def update_surface(self):
+        #updates surface with the correct text and position
         self.surface = self._font.render(self._text, True, self._color)
         self.rect = self.surface.get_rect(topleft=self._position)
 
     def draw(self, screen):
+        #draws the label onto the screen
         if self.visible:
             screen.blit(self.surface, self.rect.topleft)
 
     def rotate(self, angle):
+        #rotates the label text by a certain angle
         original_surface = self.surface.copy()
         self.surface = pygame.transform.rotate(original_surface, angle)
         self.rect = self.surface.get_rect(topleft=self._position)
@@ -544,9 +643,11 @@ class Chip:
         self.rect = self.image.get_rect(topleft=position)
 
     def draw(self, screen):
+        #draws the chip onto the screen
         screen.blit(self.image, self.rect.topleft)
 
     def change_size(self, scale_factor):
+        #changes the size of the chip image
         new_width = int(self.original_image.get_width() * scale_factor)
         new_height = int(self.original_image.get_height() * scale_factor)
         self.image = pygame.transform.scale(self.original_image, (new_width, new_height))

@@ -2,6 +2,11 @@ from game_model import Card
 value_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 suit_value_array = [0,0,0,0,0]
 def get_hand_rank_string(cards:[Card]) -> str:
+    """
+    finds the rank of the given hand and returns the hand as a string
+    :param cards: a players hand
+    :return: str: hand rank and number
+    """
     rank, cards = get_hand_rank(cards)
     hands = ['Royal Flush', 'StraightFlush', 'FourOfAKind', 'FullHouse', 'Flush']
     hands.extend(['Straight', 'ThreeOfAKind', 'ThreeOfAKind', 'TwoPair', 'Pair', 'High'])
@@ -14,6 +19,14 @@ def get_hand_rank_string(cards:[Card]) -> str:
         else: num = str(cards[0].value)
     return hands[rank] + num
 def get_hand_rank(cards:[Card])->(int, [Card]):
+    """
+    finds the rank and returns it
+    with cards in a new order best cards in the front
+    this is so you are able to compare multiple hands with the same rank
+    *see poker-hands-ordering for more details
+    :param cards: list of cards in the hand
+    :return: (rank, new_cards)
+    """
     if cards == None: raise ValueError('must send in an amount of cards')
     global value_array, suit_value_array
     value_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -38,18 +51,18 @@ def check_RoyalFlush(cards:[Card])->(bool, [Card]):
         return(True, newCards)
     return (False, newCards)
 def check_StraightFlush(cards:[Card])->(bool, [Card]):
-    #FIXME if a pair/TOAK exsists and a straight exsists, then this might fail
-    return (False, cards)
+    #FIXME if a pair/TOAK exsists and a straight exsists, then this might fail, its super rare so its fine for now
+    #return (False, cards)
     if len(cards) < 5: return (False, cards)
 
-    is_straight, newCards = check_Straight(cards)
+    is_straight, new_cards = check_Straight(cards)
     if is_straight:
         suit = cards[0].suit
         for c in cards[0:5]:
             if c.suit != suit:
                 if len(new_cards) != len(cards): raise ValueError('should return same amount of cards')
-                return (False, newCards)
-    return (True, newCards)
+                return (False, new_cards)
+    return (True, new_cards)
 def check_FourOfAKind(cards:[Card])->(bool, [Card]):
     if len(cards) < 4: return (False, cards)
     is_FOAK = False

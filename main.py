@@ -10,6 +10,10 @@ screen, clock = gui.init_pygame()
 
 
 def main():
+    """
+    Main will create and run the game and gui
+    :return:
+    """
     #Initialize game instance
     game = Game(num_User_players=3, num_AI_players=0)
     screen, clock = gui.init_pygame()
@@ -108,9 +112,17 @@ def main():
         pygame.time.delay(5000)
         pygame.quit()
         exit()
-def take_bets(game:Game)->int:
-    #returns 0 if while loop is completed
-    #returns 1 if everyone folds before there are equal bets
+def take_bets(game:Game):
+    """
+    this method takes the current active players
+    and performs a round of bets
+    the round ends when everyone has played
+    and all the bets are equal
+    or if everyone folds but one player
+
+    :param game:
+    :return:
+    """
     game.bet_round+=1
     gui.update_labels(game)
     game.update_highest_bet()
@@ -130,9 +142,16 @@ def take_bets(game:Game)->int:
         gui.update_labels(game)
         print("active players after turn",  game.active_players)
 
-
-
-def get_player_input(game: Game, player: Player) -> (int,int):
+def get_player_input(game: Game, player: Player) -> (str,int):
+    """
+    this function will utilize the gui buttons to determine
+    what move the player will make
+    it will then return what move the player made,
+    and the amount of chips associated with that move
+    :param game:
+    :param player: current players turn, input received will affect this player
+    :return: (move, amount)
+    """
     #gets current player
     #return (move, bet_amount) ex. ('bet', 50)
     print('getting input from player', player.seat_number)
