@@ -37,6 +37,7 @@ def main():
                 print('fullscreened')
 #vvvvvvvvvvvvvvvvv The GAME LOOP vvvvvvvvvvvvvvvvv#
         while not game.check_end_game():
+            game.screen.fill(gui.Color.GREEN.value)
             game.start_round(game.screen)
             game.deal_initial_cards()
             game.take_blinds()
@@ -53,6 +54,7 @@ def main():
             print('heres the flop')
             gui.show_flop(game, game.screen)
             game.add_flop_cards()
+            gui.update_labels(game)
             #second round of bets
             print('second round of bets')
             take_bets(game)
@@ -65,6 +67,7 @@ def main():
             print('heres the turn')
             gui.show_turn(game, game.screen)
             game.add_turn_cards()
+            gui.update_labels(game)
             print('third round of bets')
             take_bets(game)
             game.update_pot()
@@ -76,6 +79,7 @@ def main():
             print('heres the river')
             gui.show_river(game, game.screen)
             game.add_river_cards()
+            gui.update_labels(game)
             print('last round of bets')
             take_bets(game)
             game.update_pot()
@@ -87,6 +91,8 @@ def main():
             print('comparing hands and selecting winner')
             winners = game.compare_hands(game.active_players)
             game.end_round(winners)
+            game.update_pot()
+            gui.update_labels(game)
         running = False
         print('game loop has ended')
 #^^^^^^^^^^^^^^^ The GAME LOOP ^^^^^^^^^^^^^^^#
@@ -97,7 +103,7 @@ def main():
                 if winner != None: raise ValueError('cannot have two winners')
                 winner = player
                 print('winner is', player.__str__())
-                gui.print_winner(player)
+                gui.print_winner(game.screen, player)
                 break
         pygame.time.delay(5000)
         pygame.quit()
@@ -133,13 +139,13 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     gui.enable_buttons(game, player)
     input_received = False
     betslider = None
-    submit_button = None
-    cancel_button = None
+    submit_button = gui.Button(700, 460, 80, 30, "Submit Bet", 20, True, visible=False)
+    cancel_button = gui.Button(800, 460, 80, 30, "Cancel", 20, True, visible=False)
     #creating event to track timer
     TIMEREVENT = pygame.USEREVENT + 1
-    #create timer
+    #create_timer
     pygame.time.set_timer(TIMEREVENT, 1000)
-    countdown_time = 10 #length of the timer in seconds
+    countdown_time = 100 #length of the timer in seconds
     num_time_passed = 0
     font = pygame.font.Font(None, 55)
 
@@ -188,12 +194,12 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                     return ('call', 0)
                 elif button.text == 'Bet' and button.enabled:
                     range = player.get_bet_range(game)
-                    betslider = gui.Slider(700, 500, 200, 20, range[0], range[1], 10)
-                    submit_button = gui.Button(700, 460, 80, 30, "Submit Bet", 20, True)
-                    cancel_button = gui.Button(800, 460, 80, 30, "Cancel", 20, True)
+                    betslider = gui.Slider(700, 500, 200, 20, range[0], range[1], 10, visible=True)
 
         if betslider:
             betslider.draw(game.screen)
+            submit_button.visible = True
+            cancel_button.visible = True
             submit_button.draw(game.screen)
             cancel_button.draw(game.screen)
             pygame.display.flip()
@@ -206,8 +212,8 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                     if submit_button.check_click(mouse_pos, events):
                         playerbet = betslider.value
                         betslider = None
-                        submit_button = None
-                        cancel_button = None
+                        submit_button.visible = False
+                        cancel_button.visible = False
                         gui.redraw_screen(game, game.screen, clock)
                         gui.create_cards(game, game.screen)
                         gui.create_buttons(game)
@@ -217,8 +223,8 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                         return ('bet', playerbet)
                     if cancel_button.check_click(mouse_pos, events):
                         betslider = None
-                        submit_button = None
-                        cancel_button = None
+                        submit_button.visible = False
+                        cancel_button.visible = False
                         gui.redraw_screen(game, game.screen, clock)
                         gui.create_cards(game, game.screen)
                         gui.create_buttons(game)
@@ -239,9 +245,6 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     #raise ValueError('no input received')
     return ('fold', 0)
 
-
-def delay(num_seconds:int):
-    pass
 
 
 if __name__ == '__main__':

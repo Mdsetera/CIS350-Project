@@ -12,7 +12,7 @@ labels_player_bet = []
 label_pot = []
 label_dealer = []
 label_current_player_turn = []
-
+label_player_hands = []
 class Color(Enum):
     GREEN = (0, 128, 0)
     BLUE = (0,255,0)
@@ -84,35 +84,35 @@ def create_cards(game, screen):
             if player == game.active_players[0]:
                 if j == 0:
                     player1_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player1_card1.topleft = (400, 585)
-                    screen.blit(card.front_image, player1_card1)
+                    player1_card1.topleft = (5, 200)
+                    card_rotate1 = pygame.transform.rotate(card.front_image, 90)
+                    screen.blit(card_rotate1, player1_card1)
                 elif j == 1:
                     player1_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player1_card2.topleft = (450, 585)
-                    screen.blit(card.front_image, player1_card2)
+                    player1_card2.topleft = (5, 250)
+                    card_rotate2 = pygame.transform.rotate(card.front_image, 90)
+                    screen.blit(card_rotate2, player1_card2)
             elif player == game.active_players[1]:
                 if j == 0:
                     player2_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player2_card1.topleft = (5, 200)
-                    card_rotate1 = pygame.transform.rotate(card.back_image, 90)
-                    screen.blit(card_rotate1, player2_card1)
+                    player2_card1.topleft = (400, 585)
+                    screen.blit(card.front_image, player2_card1)
                     #pygame.display.update(player2_card1)
                 elif j == 1:
                     player2_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player2_card2.topleft = (5, 250)
-                    card_rotate1 = pygame.transform.rotate(card.back_image, 90)
-                    screen.blit(card_rotate1, player2_card2)
+                    player2_card2.topleft = (450, 585)
+                    screen.blit(card.front_image, player2_card2)
                     #pygame.display.update(player2_card2)
             elif player == game.active_players[2]:
                 if j == 0:
                     player3_card1 = pygame.Rect(0, 0, card.width, card.height)
                     player3_card1.topleft = (840, 200)
-                    card_rotate2 = pygame.transform.rotate(card.back_image, 270)
+                    card_rotate2 = pygame.transform.rotate(card.front_image, 270)
                     screen.blit(card_rotate2, player3_card1)
                 elif j == 1:
                     player3_card2 = pygame.Rect(0, 0, card.width, card.height)
                     player3_card2.topleft = (840, 250)
-                    card_rotate2 = pygame.transform.rotate(card.back_image, 270)
+                    card_rotate2 = pygame.transform.rotate(card.front_image, 270)
                     screen.blit(card_rotate2, player3_card2)
 
     pygame.display.update()
@@ -186,6 +186,7 @@ def enable_buttons(game, player):
 
 
 def create_labels(game):
+    import hand_rank_tests as rank
     global labels_chip_count,labels_player_bet, label_pot, label_dealer, label_current_player_turn
     labels_chip_count = []
     labels_player_bet = []
@@ -199,39 +200,54 @@ def create_labels(game):
 
     label0_text = f'Player 0 Balance: {int(game.seat[0].chips)}'
     label0_bet_text = f'Player 0 Bet: {int(game.seat[0].bet)}'
+    label0_hand_text = game.seat[0].get_hand_rank_str()
     #Player 0 labels
     player0_balance = Label(label0_text, 25, Color.BLUE, (45, 370))
     player0_bet = Label(label0_bet_text, 25, Color.BLUE, (10, 370))
+    player0_hand = Label(label0_hand_text, 25, Color.BLUE, (80, 370))
+    label_player_hands.append(player0_hand)
     labels_chip_count.append(player0_balance)
     labels_player_bet.append(player0_bet)
 
     label1_text = f'Player 1 Balance: {int(game.seat[1].chips)}'
     label1_bet_text = f'Player 1 Bet: {int(game.seat[1].bet)}'
+    label1_hand_text = game.seat[1].get_hand_rank_str()
     #Player 1 labels
     player1_balance = Label(label1_text, 40, Color.BLUE, (565, 670))
     player1_bet = Label(label1_bet_text, 40, Color.BLUE, (565, 710))
+    player1_hand = Label(label1_hand_text, 40, Color.BLUE, (420, 550))
+    label_player_hands.append(player1_hand)
     labels_chip_count.append(player1_balance)
     labels_player_bet.append(player1_bet)
 
     label2_text = f'Player 2 Balance: {int(game.seat[2].chips)}'
     label2_bet_text = f'Player 2 Bet: {int(game.seat[2].bet)}'
+    label2_hand_text = game.seat[2].get_hand_rank_str()
     #Player 2 labels
+
     player2_balance = Label(label2_text, 25, Color.BLUE, (930, 410))
     player2_bet = Label(label2_bet_text, 25, Color.BLUE, (965, 480))
+    player2_hand = Label(label2_hand_text, 25, Color.BLUE, (895, 480))
+    label_player_hands.append(player2_hand)
     labels_chip_count.append(player2_balance)
     labels_player_bet.append(player2_bet)
 
     player0_balance.rotate(270)
     player0_bet.rotate(270)
+    player0_hand.rotate(270)
     player2_balance.rotate(90)
     player2_bet.rotate(90)
+    player2_hand.rotate(90)
 
     player0_balance.draw(game.screen)
     player0_bet.draw(game.screen)
+    player0_hand.draw(game.screen)
     player1_balance.draw(game.screen)
     player1_bet.draw(game.screen)
+    player1_hand.draw(game.screen)
     player2_balance.draw(game.screen)
     player2_bet.draw(game.screen)
+    player2_hand.draw(game.screen)
 
     chip1_player0 = Chip((38, 560))
     chip2_player0 = Chip((5, 530))
@@ -255,6 +271,7 @@ def create_labels(game):
     chip1_player2.draw(game.screen)
     chip2_player2.draw(game.screen)
 
+    #pot label
     label_pot.append(Label(f"Pot: 0", 40, Color.RED, (430, 370)))
     total_pot = 0
     for pot in game.pot:
@@ -266,6 +283,7 @@ def create_labels(game):
     label_current_player_turn.append(Label(f'{game.current_player}\'s turn', 40, Color.BLACK, (5, 40)))
     label_current_player_turn[0].draw(game.screen)
 
+    #fold lables
     label_fold = []
     #print("Players in seats ->", game.seat)
     #print(f"[{game.seat[0].fold},{game.seat[1].fold},{game.seat[2].fold}]")
@@ -282,8 +300,8 @@ def create_labels(game):
     label_fold[2].rotate(20)
     label_fold[2].draw(game.screen)
 
-    print(f'{label_fold[0].visible},{label_fold[1].visible},{label_fold[2].visible}')
-
+    #print(f'{label_fold[0].visible},{label_fold[1].visible},{label_fold[2].visible}')
+    #all in lables
     label_player_all_in = []
     label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (5+10,200+30), visible = game.seat[0].all_in))
     label_player_all_in[0].rotate(20)
@@ -299,13 +317,14 @@ def create_labels(game):
 
 
 
+
     pygame.display.flip()
 
 
 def update_labels(game):
     #reset all labels used in the game
     #erase label text by redrawing
-    for label in labels_chip_count + labels_player_bet + label_pot + label_dealer + label_current_player_turn:
+    for label in labels_chip_count + labels_player_bet + label_pot + label_dealer + label_current_player_turn + label_player_hands:
         new = pygame.Surface(label.rect.size)
         new.fill(Color.GREEN.value)
         game.screen.blit(new, label.rect.topleft)
@@ -316,11 +335,11 @@ def update_labels(game):
     pygame.display.flip()
 
 def print_winner(screen, winner):
-    winner_label = Label(f'{winner.__str__()} is the winner!!!', 100, Color.WHITE, (5,400))
+    winner_label = Label(f'{winner.__str__()} is the winner!!!', 100, Color.WHITE, (100,330))
     winner_label.draw(screen)
     pygame.display.flip()
 class Button:
-    def __init__(self, x, y, width, height, text, font_size=20, enabled=True):
+    def __init__(self, x, y, width, height, text, font_size=20, enabled=True, visible=True):
         self.text = text
         self.x = x
         self.y = y
@@ -329,20 +348,31 @@ class Button:
         self.font_size = font_size
         self.enabled = enabled
         self.font = pygame.font.Font(None, self.font_size)
+        self._visible = visible
         buttons.append(self)
+    @property
+    def visible(self):
+        return self._visible
 
+    @visible.setter
+    def visible(self, value):
+        if isinstance(value, bool):
+            if value:
+                self._visible = value
     def draw(self, screen):
-        if self.enabled:
-            button_color = (0, 0, 255)
-            text_color = (255, 255, 255)
-        else:
-            button_color = (128, 128, 128)
-            text_color = (0, 0, 0)
-        pygame.draw.rect(screen, button_color, (self.x, self.y, self.width, self.height))
-        pygame.draw.rect(screen, (0, 0, 0), (self.x, self.y, self.width, self.height), 2)
-        button_text = self.font.render(self.text, True, text_color)
-        text_rect = button_text.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
-        screen.blit(button_text, text_rect)
+        if self.visible:
+            if self.enabled:
+                button_color = (0, 0, 255)
+                text_color = (255, 255, 255)
+            else:
+                button_color = (128, 128, 128)
+                text_color = (0, 0, 0)
+
+            pygame.draw.rect(screen, button_color, (self.x, self.y, self.width, self.height))
+            pygame.draw.rect(screen, (0, 0, 0), (self.x, self.y, self.width, self.height), 2)
+            button_text = self.font.render(self.text, True, text_color)
+            text_rect = button_text.get_rect(center=(self.x + self.width / 2, self.y + self.height / 2))
+            screen.blit(button_text, text_rect)
 
     def check_hover(self, mouse_pos):
         #mouse_pos = pygame.mouse.get_pos()
@@ -361,7 +391,7 @@ class Button:
 
 
 class Slider:
-    def __init__(self, x, y, width, height, minimum, maximum, step):
+    def __init__(self, x, y, width, height, minimum, maximum, step, visible=False):
         self.x = x
         self.y = y
         self.width = width
@@ -375,6 +405,7 @@ class Slider:
         self.slider_rect = pygame.Rect(self.x, self.y + height // 3, self.width, height // 3)
         self.pointer_rect = pygame.Rect(self.x+self.width, y, 20, height)
         self.dragging = False
+
 
     def draw(self, screen):
         #draw slider bar

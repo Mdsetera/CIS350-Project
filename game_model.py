@@ -253,17 +253,16 @@ class Game:
         else:
             return False
     def compare_hands(self, players:list)->list:
-        import hand_rank_tests as rank
         #recieves a list of players
         #compares the hands of each of the players
         #returns list of player(s) with best hand
         #FIXME build this method
-        best_hand_rank = -1
+        best_hand_rank = 100 #lowest number is best
         hand_rank = {}
         print('finding hand ranks')
         for player in players:
-            hand_rank[player], player.hand = rank.get_hand_rank(player.hand)
-            if hand_rank[player] > best_hand_rank: best_hand_rank = hand_rank[player]
+            hand_rank[player] = player.get_hand_rank()[0]
+            if hand_rank[player] < best_hand_rank: best_hand_rank = hand_rank[player]
         compare = [player for player in hand_rank if hand_rank[player] == best_hand_rank]
         if len(compare) == 1:
             return [compare[0]]
@@ -330,7 +329,7 @@ class Card:
         self.height = self.rect.height
 
     def __repr__(self):
-        return f'{self.value},{self.suit},'
+        return f'{self.value},{self.suit}'
     def __lt__(self, other):
         return self.value < other.value
     def __gt__(self, other):
@@ -457,6 +456,17 @@ class Player:
         min_bet = game.highest_bet + game.big_blind
 
         return min_bet, max_bet
+    def get_hand_rank(self):
+        if self.hand == []:
+            return (-1, self.hand)
+        import hand_rank_tests as rank
+        rank, self.hand = rank.get_hand_rank(self.hand)
+        return rank, self.hand
+    def get_hand_rank_str(self):
+        if self.hand == []:
+            return 'No cards'
+        import hand_rank_tests as rank
+        return rank.get_hand_rank_string(self.hand)
     def _check(self, game:Game):
         pass
     def _fold(self, game:Game):
@@ -484,11 +494,6 @@ class Player:
             self.bet = game.highest_bet
             self.chips -= self.bet
             if self.chips == 0: self.all_in = True
-    def check_hand_rank(self, hand:list[Card]) -> None:
-        """
-        given a hand of cards, returns the type of hand
-        sets the hand rank and best card
-        """
 
 class UserPlayer(Player):
     def __init__(self):
