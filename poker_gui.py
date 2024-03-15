@@ -15,7 +15,8 @@ label_current_player_turn = []
 label_player_hands = []
 class Color(Enum):
     GREEN = (0, 128, 0)
-    BLUE = (0,255,0)
+    BLUE = (0,0,255)
+    LGREEN = (0, 255, 0)
     RED = (255,0,0)
     WHITE = (255,255,255)
     BLACK = (0,0,0)
@@ -202,9 +203,9 @@ def create_labels(game):
     label0_bet_text = f'Player 0 Bet: {int(game.seat[0].bet)}'
     label0_hand_text = game.seat[0].get_hand_rank_str()
     #Player 0 labels
-    player0_balance = Label(label0_text, 25, Color.BLUE, (45, 370))
-    player0_bet = Label(label0_bet_text, 25, Color.BLUE, (10, 370))
-    player0_hand = Label(label0_hand_text, 25, Color.BLUE, (80, 370))
+    player0_balance = Label(label0_text, 25, Color.LGREEN, (45, 370))
+    player0_bet = Label(label0_bet_text, 25, Color.LGREEN, (10, 370))
+    player0_hand = Label(label0_hand_text, 25, Color.LGREEN, (80, 370))
     label_player_hands.append(player0_hand)
     labels_chip_count.append(player0_balance)
     labels_player_bet.append(player0_bet)
@@ -213,9 +214,9 @@ def create_labels(game):
     label1_bet_text = f'Player 1 Bet: {int(game.seat[1].bet)}'
     label1_hand_text = game.seat[1].get_hand_rank_str()
     #Player 1 labels
-    player1_balance = Label(label1_text, 40, Color.BLUE, (565, 670))
-    player1_bet = Label(label1_bet_text, 40, Color.BLUE, (565, 710))
-    player1_hand = Label(label1_hand_text, 40, Color.BLUE, (420, 550))
+    player1_balance = Label(label1_text, 40, Color.LGREEN, (565, 670))
+    player1_bet = Label(label1_bet_text, 40, Color.LGREEN, (565, 710))
+    player1_hand = Label(label1_hand_text, 40, Color.LGREEN, (420, 550))
     label_player_hands.append(player1_hand)
     labels_chip_count.append(player1_balance)
     labels_player_bet.append(player1_bet)
@@ -225,9 +226,9 @@ def create_labels(game):
     label2_hand_text = game.seat[2].get_hand_rank_str()
     #Player 2 labels
 
-    player2_balance = Label(label2_text, 25, Color.BLUE, (930, 410))
-    player2_bet = Label(label2_bet_text, 25, Color.BLUE, (965, 480))
-    player2_hand = Label(label2_hand_text, 25, Color.BLUE, (895, 480))
+    player2_balance = Label(label2_text, 25, Color.LGREEN, (930, 410))
+    player2_bet = Label(label2_bet_text, 25, Color.LGREEN, (965, 480))
+    player2_hand = Label(label2_hand_text, 25, Color.LGREEN, (895, 480))
     label_player_hands.append(player2_hand)
     labels_chip_count.append(player2_balance)
     labels_player_bet.append(player2_bet)

@@ -141,6 +141,7 @@ class Game:
             if player.bet > big_bet:
                 big_bet = player.bet
         self.highest_bet = big_bet
+        print('highest bet ->', self.highest_bet)
 
     def update_pot(self):
         for x in range(len(self.active_players)):
@@ -182,7 +183,8 @@ class Game:
         return next_player
     def equal_bets(self):
         #sent a list of players, returns True if all bets are equal to the highest bet
-        print('equal bets? ->', self.active_players, "\nhighest bet ->", self.highest_bet)
+        print('equal bets? ->', self.active_players)
+        self.update_highest_bet()
         for player in self.active_players:
             if player.bet != self.highest_bet and player.all_in == False:
                 return False
