@@ -80,9 +80,10 @@ def create_cards(game, screen):
     if game.bet_round >= 4:
         show_river(game, screen)
 
-    for player in game.active_players:
+#FIXME rerwite to only include active players in release 2
+    for player in game.seat:
         for j, card in enumerate(player.hand):
-            if player == game.active_players[0]:
+            if player == game.seat[0]:
                 if j == 0:
                     player1_card1 = pygame.Rect(0, 0, card.width, card.height)
                     player1_card1.topleft = (5, 200)
@@ -93,18 +94,18 @@ def create_cards(game, screen):
                     player1_card2.topleft = (5, 250)
                     card_rotate2 = pygame.transform.rotate(card.front_image, 90)
                     screen.blit(card_rotate2, player1_card2)
-            elif player == game.active_players[1]:
+            elif player == game.seat[1]:
                 if j == 0:
                     player2_card1 = pygame.Rect(0, 0, card.width, card.height)
                     player2_card1.topleft = (400, 585)
                     screen.blit(card.front_image, player2_card1)
-                    #pygame.display.update(player2_card1)
+                    pygame.display.update(player2_card1)
                 elif j == 1:
                     player2_card2 = pygame.Rect(0, 0, card.width, card.height)
                     player2_card2.topleft = (450, 585)
                     screen.blit(card.front_image, player2_card2)
-                    #pygame.display.update(player2_card2)
-            elif player == game.active_players[2]:
+                    pygame.display.update(player2_card2)
+            elif player == game.seat[2]:
                 if j == 0:
                     player3_card1 = pygame.Rect(0, 0, card.width, card.height)
                     player3_card1.topleft = (840, 200)
