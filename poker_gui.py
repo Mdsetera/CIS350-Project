@@ -360,6 +360,10 @@ class Button:
         if isinstance(value, bool):
             if value:
                 self._visible = value
+    def remove(self, screen):
+        new = pygame.Surface((self.width, self.height))
+        new.fill(Color.GREEN.value)
+        screen.blit(new, (self.x, self.y))
     def draw(self, screen):
         if self.visible:
             if self.enabled:

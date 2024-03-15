@@ -214,6 +214,8 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                         betslider = None
                         submit_button.visible = False
                         cancel_button.visible = False
+                        submit_button.remove(game.screen)
+                        cancel_button.remove(game.screen)
                         gui.redraw_screen(game, game.screen, clock)
                         gui.create_cards(game, game.screen)
                         gui.create_buttons(game)
@@ -227,6 +229,8 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                         cancel_button.visible = False
                         gui.redraw_screen(game, game.screen, clock)
                         gui.create_cards(game, game.screen)
+                        submit_button.remove(game.screen)
+                        cancel_button.remove(game.screen)
                         gui.create_buttons(game)
                         gui.update_labels(game)
                         pygame.display.flip()
@@ -238,8 +242,11 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                     pygame.display.flip()
                     betslider.draw(game.screen)
                     pygame.display.flip()
-
             pygame.time.Clock().tick(60)
+        else:
+            submit_button.remove(game.screen)
+            cancel_button.remove(game.screen)
+
 
     pygame.time.set_timer(TIMEREVENT, 0)
     #raise ValueError('no input received')
