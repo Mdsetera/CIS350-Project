@@ -72,11 +72,11 @@ def show_river(game, screen):
 #Card Sizes & Position
 def create_cards(game, screen):
 
-    if game.bet_round == 2:
+    if game.bet_round >= 2:
         show_flop(game, screen)
-    elif game.bet_round == 3:
+    if game.bet_round >= 3:
         show_turn(game, screen)
-    elif game.bet_round == 4:
+    if game.bet_round >= 4:
         show_river(game, screen)
 
     for player in game.active_players:
@@ -266,6 +266,39 @@ def create_labels(game):
     label_current_player_turn.append(Label(f'{game.current_player}\'s turn', 40, Color.BLACK, (5, 40)))
     label_current_player_turn[0].draw(game.screen)
 
+    label_fold = []
+    #print("Players in seats ->", game.seat)
+    #print(f"[{game.seat[0].fold},{game.seat[1].fold},{game.seat[2].fold}]")
+    label_fold.append(Label('FOLD', 60, Color.BLACK, (5+10,200+30), visible = game.seat[0].fold))
+    label_fold[0].rotate(20)
+
+    label_fold[0].draw(game.screen)
+
+    label_fold.append(Label('FOLD', 60, Color.BLACK, (405+10,585+30), visible = game.seat[1].fold))
+    label_fold[1].rotate(20)
+    label_fold[1].draw(game.screen)
+
+    label_fold.append(Label('FOLD', 60, Color.BLACK, (840+10,200+30), visible = game.seat[2].fold))
+    label_fold[2].rotate(20)
+    label_fold[2].draw(game.screen)
+
+    print(f'{label_fold[0].visible},{label_fold[1].visible},{label_fold[2].visible}')
+
+    label_player_all_in = []
+    label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (5+10,200+30), visible = game.seat[0].all_in))
+    label_player_all_in[0].rotate(20)
+    label_player_all_in[0].draw(game.screen)
+
+    label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (405+10,585+30), visible = game.seat[1].all_in))
+    label_player_all_in[1].rotate(20)
+    label_player_all_in[1].draw(game.screen)
+
+    label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (840+10,200+30), visible = game.seat[2].all_in))
+    label_player_all_in[2].rotate(20)
+    label_player_all_in[2].draw(game.screen)
+
+
+
     pygame.display.flip()
 
 
@@ -282,7 +315,10 @@ def update_labels(game):
 
     pygame.display.flip()
 
-
+def print_winner(screen, winner):
+    winner_label = Label(f'{winner.__str__()} is the winner!!!', 100, Color.WHITE, (5,400))
+    winner_label.draw(screen)
+    pygame.display.flip()
 class Button:
     def __init__(self, x, y, width, height, text, font_size=20, enabled=True):
         self.text = text
@@ -378,7 +414,7 @@ class Slider:
 
 
 class Label:
-    def __init__(self, text, font_size, color, position):
+    def __init__(self, text, font_size, color, position, visible=True):
         if isinstance(color, Color): color = color.value
         self._text = text
         self._font_size = font_size
@@ -386,7 +422,7 @@ class Label:
         self._position = position
         self._font = pygame.font.Font(None, self._font_size)
         self.update_surface()
-        self._visible = True
+        self._visible = visible
 
     @property
     def text(self):

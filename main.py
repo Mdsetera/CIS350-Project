@@ -23,6 +23,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                pygame.quit()
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 gui.change_dimensions(game, event.w, event.h)
@@ -34,7 +35,7 @@ def main():
                 gui.create_labels(game)
             elif event.type == pygame.FULLSCREEN:
                 print('fullscreened')
-
+#vvvvvvvvvvvvvvvvv The GAME LOOP vvvvvvvvvvvvvvvvv#
         while not game.check_end_game():
             game.start_round(game.screen)
             game.deal_initial_cards()
@@ -61,12 +62,46 @@ def main():
                 winner = game.active_players[0]
                 game.end_round([winner])
                 continue
-            print('end of game loop')
-
+            print('heres the turn')
+            gui.show_turn(game, game.screen)
+            game.add_turn_cards()
+            print('third round of bets')
+            take_bets(game)
+            game.update_pot()
+            gui.update_labels(game)
+            if game.check_end_round():
+                winner = game.active_players[0]
+                game.end_round([winner])
+                continue
+            print('heres the river')
+            gui.show_river(game, game.screen)
+            game.add_river_cards()
+            print('last round of bets')
+            take_bets(game)
+            game.update_pot()
+            gui.update_labels(game)
+            if game.check_end_round():
+                winner = game.active_players[0]
+                game.end_round([winner])
+                continue
+            print('comparing hands and selecting winner')
+            winners = game.compare_hands(game.active_players)
+            game.end_round(winners)
+        running = False
+        print('game loop has ended')
+#^^^^^^^^^^^^^^^ The GAME LOOP ^^^^^^^^^^^^^^^#
         pygame.display.flip()
-
-    pygame.quit()
-
+        winner = None
+        for player in game.seat:
+            if player.chips > 0:
+                if winner != None: raise ValueError('cannot have two winners')
+                winner = player
+                print('winner is', player.__str__())
+                gui.print_winner(player)
+                break
+        pygame.time.delay(5000)
+        pygame.quit()
+        exit()
 def take_bets(game:Game)->int:
     #returns 0 if while loop is completed
     #returns 1 if everyone folds before there are equal bets
@@ -76,7 +111,7 @@ def take_bets(game:Game)->int:
     turn_not_taken = []
     everyone_took_turn = False
     for player in game.active_players: turn_not_taken.append(player)
-    while not (game.equal_bets() and not turn_not_taken):
+    while not (game.equal_bets() and not turn_not_taken) and len(game.active_players) > 1:
 
         player = game.current_player
         if type(player) is type(UserPlayer()):
@@ -88,6 +123,7 @@ def take_bets(game:Game)->int:
         print(f'turn not taken -> {turn_not_taken}')
         gui.update_labels(game)
         print("active players after turn",  game.active_players)
+
 
 
 def get_player_input(game: Game, player: Player) -> (int,int):
@@ -103,7 +139,8 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     TIMEREVENT = pygame.USEREVENT + 1
     #create timer
     pygame.time.set_timer(TIMEREVENT, 1000)
-    countdown_time = 1000 #length of the timer in seconds
+    countdown_time = 10 #length of the timer in seconds
+    num_time_passed = 0
     font = pygame.font.Font(None, 55)
 
     while(input_received == False):
@@ -119,11 +156,16 @@ def get_player_input(game: Game, player: Player) -> (int,int):
                 pygame.display.flip()
                 gui.redraw_screen(game, screen, clock)
                 gui.create_cards(game, screen)
+                gui.update_labels(game)
             elif event.type == TIMEREVENT:
                 countdown_time -= 1
+                num_time_passed += 1
+                #print(num_time_passed)
                 if countdown_time <= 0:
                     input_received = True
                     return ('fold', 0)
+                elif num_time_passed >= 3 and player.all_in:
+                    return ('check', 0)
 
         #create rect to clear the timer space before incrementing countdown to prevent overlapping
         timer_rect = pygame.Rect(460, 25, 100, 55)
@@ -198,7 +240,7 @@ def get_player_input(game: Game, player: Player) -> (int,int):
     return ('fold', 0)
 
 
-def resize_video(game:Game, screen, clock):
+def delay(num_seconds:int):
     pass
 
 
