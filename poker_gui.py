@@ -26,8 +26,8 @@ def init_pygame():
     screen = pygame.display.set_mode((window_start_Width, window_start_Height), pygame.RESIZABLE)
     pygame.display.set_caption("Texas Hold'Em!")
     clock = pygame.time.Clock()
-    icon_image = pygame.image.load("images\icon.png")
-    pygame.display.set_icon(icon_image)
+    #icon_image = pygame.image.load("images\icon.png")
+    #pygame.display.set_icon(icon_image)
 
     return screen, clock
 
