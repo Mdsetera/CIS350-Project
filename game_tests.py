@@ -1,5 +1,4 @@
 import pygame
-
 import main
 from game_model import *
 from poker_gui import *
@@ -161,13 +160,10 @@ class TestPlayer:
 
 
 class TestUserPlayer:
-
-    #  can instantiate UserPlayer object
     def test_instantiate_user_player(self):
         user_player = UserPlayer()
         assert isinstance(user_player, UserPlayer)
 
-    #  chips property raises ValueError if set to negative number
     def test_chips_property_negative_value(self):
         user_player = UserPlayer()
         with pytest.raises(ValueError):
@@ -175,13 +171,10 @@ class TestUserPlayer:
 
 
 class TestAIPlayer:
-
-    #  AIPlayer can be instantiated without errors
     def test_instantiation(self):
         player = AIPlayer()
         assert isinstance(player, AIPlayer)
 
-    #  AIPlayer can handle not having any chips left
     def test_no_chips_left(self):
         player = AIPlayer()
         player.chips = 0
@@ -207,57 +200,41 @@ class TestColor:
 
 
 class TestCreateCards:
-
-    #  The function displays the correct cards for each player and the table depending on the current round of betting.
     def test_display_correct_cards(self):
         game = Game()
         screen = pygame.Surface((800, 600))
         create_cards(game, screen)
-        # Assert that the correct cards are displayed for each player and the table
-        # based on the current round of betting
 
-    #  The function handles the case where the game object is empty.
     def test_empty_game_object(self):
         game = Game()
         screen = pygame.Surface((800, 600))
         create_cards(game, screen)
         # Assert that the function handles the case where the game object is empty
+        assert game is None
 
-    #  The function handles the case where the screen object is empty.
     def test_empty_screen_object(self):
         game = Game()
         screen = None
         create_cards(game, screen)
-        # Assert that the function handles the case where the screen object is empty
-
+        assert screen is None
 
 class TestUpdate:
-
-    #  updates the screen based on the current game state
     def test_updates_screen(self):
         game = Game()
         screen = pygame.display.set_mode((800, 600))
         clock = pygame.time.Clock()
-
         update(game, screen, clock)
 
-        # Assert that the screen has been updated
         assert pygame.display.get_surface().get_flags() & pygame.SRCALPHA
 
 
 class TestRedrawScreen:
-
-    #  fills the screen with green color
     def test_fill_screen_with_green_color(self):
-        # Arrange
         game = Game()
         screen = pygame.Surface((800, 600))
         clock = pygame.time.Clock()
-
-        # Act
         redraw_screen(game, screen, clock)
 
-        # Assert
         assert screen.get_at((0, 0)) == Color.GREEN.value
 
 
@@ -325,8 +302,8 @@ class TestButton:
     #  Button can check if the mouse is hovering over it
     def test_check_hover(self):
         button = Button(100, 200, 50, 30, "Test", 20, True)
-        assert button.check_hover((110, 210)) == True
-        assert button.check_hover((90, 190)) == False
+        assert button.check_hover((110, 210)) is True
+        assert button.check_hover((90, 190)) is False
 
     #  Button can be created with no font_size parameter
     def test_create_button_without_font_size_parameter(self):
@@ -336,12 +313,12 @@ class TestButton:
     #  Button can be created with no enabled parameter
     def test_create_button_without_enabled_parameter(self):
         button = Button(100, 200, 50, 30, "Test", 20)
-        assert button.enabled == True
+        assert button.enabled is True
 
     #  Button can be created with text parameter as None
     def test_create_button_with_text_parameter_as_none(self):
         button = Button(100, 200, 50, 30, None, 20, True)
-        assert button.text == None
+        assert button.text is None
 
 
 class TestSlider:
@@ -450,9 +427,9 @@ class TestGame(unittest.TestCase):
             self.assertEqual(len(player.hand), 3)
 
     def test_equal_bets(self):
-        player1 = Player()  # Initialize your player here
+        player1 = Player()
         player1.bet = 10
-        player2 = Player()  # Initialize your player here
+        player2 = Player()
         player2.bet = 10
         self.game.active_players = [player1, player2]
         self.game.highest_bet = 10
@@ -506,7 +483,7 @@ class TestTakeBets(unittest.TestCase):
         self.game.active_players = [self.user_player]
         self.game.current_player = self.user_player
 
-    @patch('your_module.get_player_input', return_value=('check', 0))  # replace 'your_module' with the actual module name
+    @patch('your_module.get_player_input', return_value=('check', 0))
     def test_take_bets_user_player(self, mock_get_player_input):
         result = take_bets(self.game)
         self.assertEqual(result, 0)
@@ -602,7 +579,7 @@ class TestHandRank(unittest.TestCase):
             Card(10, Suit.HEARTS, "Images/cardBack_red5.png")
         ]
         rank, _ = get_hand_rank(cards)
-        self.assertEqual(rank, 2)  # Four of a Kind
+        self.assertEqual(rank, 2)
 
 
     def test_check_HighCard(self):
