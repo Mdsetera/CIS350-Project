@@ -1,10 +1,47 @@
+import pygame
+
+import main
 from game_model import *
 from poker_gui import *
 from main import *
 from start_screen import *
+from hand_rank_tests import *
 import pytest
+from unittest.mock import patch, MagicMock
+import unittest
 
 
+
+class TestMainFunctions(unittest.TestCase):
+    def test_take_bets(self):
+        # Create a mock game instance
+        game = Game(num_User_players=3, num_AI_players=0)
+        player1 = UserPlayer()
+        player2 = Player()
+        player3 = Player()
+        game.active_players = [player1, player2, player3]
+
+        # Mock the input for each player's turn
+        with patch('builtins.input', side_effect=['call', 'fold']):
+            take_bets(game)
+
+        # Check if the bet_round attribute has been incremented
+        self.assertEqual(game.bet_round, 2)
+
+    def test_get_player_input(self):
+        # Create a mock game instance and player
+        game = Game(num_User_players=3, num_AI_players=0)
+        player = UserPlayer()
+
+        # Mock the input for the player's turn
+        with patch('builtins.input', side_effect=[('bet', 50)]):
+            move, bet_amount = get_player_input(game, player)
+
+        # Check if the returned move and bet amount match the expected values
+        self.assertEqual(move, 'bet')
+        self.assertEqual(bet_amount, 50)
+
+        
 class TestSuit:
 
     #  Suit.HEARTS should return 'HEARTS'
@@ -99,7 +136,6 @@ class TestPlayer:
         assert player.bet == 100
         assert player.chips == 450
 
-
     #  Player cannot bet more than they have
     def test_player_cannot_bet_more_than_they_have(self):
         player = Player()
@@ -150,7 +186,6 @@ class TestAIPlayer:
         player = AIPlayer()
         player.chips = 0
         assert player.chips == 0
-
 
 
 class TestColor:
@@ -254,6 +289,7 @@ class TestCreateButtons:
         assert gui.buttons[3].height == 50
         assert gui.buttons[3].text == "Bet"
 
+
 class TestUpdateLabels:
 
     #  Resets all labels used in the game
@@ -271,7 +307,6 @@ class TestUpdateLabels:
         # Check that all labels have been reset to empty text
         for label in labels_chip_count + labels_player_bet + label_pot + label_dealer + label_current_player_turn:
             assert label.text == ""
-
 
 
 class TestButton:
@@ -319,6 +354,7 @@ class TestSlider:
         pygame.display.flip()
         pygame.quit()
 
+
 class TestChip:
 
     #  can create a Chip object with a given position
@@ -359,3 +395,251 @@ class TestChip:
         assert chip.rect.width == 0
         assert chip.rect.height == 0
 
+
+class TestGame(unittest.TestCase):
+
+    def setUp(self):
+        self.game = Game()
+
+    def test_init(self):
+        self.assertIsNotNone(self.game.deck)
+        self.assertEqual(self.game.table_cards, [])
+        self.game.seat = [UserPlayer(), UserPlayer(), UserPlayer()]
+        self.assertEqual(len(self.game.seat), 3)
+        self.assertTrue(all(isinstance(player, UserPlayer) for player in self.game.seat))
+
+    def test_deal_initial_cards(self):
+        # Mock the dependencies
+        self.game.deck.populate = lambda: None
+        self.game.deck.shuffle = lambda: None
+        self.game.deck.stack = [MagicMock(front_image=pygame.Surface((1, 1))) for _ in range(52)]
+        self.game.active_players = [UserPlayer() for _ in range(3)]
+
+        self.game.deal_initial_cards()
+
+    def test_start_round(self):
+        screen_mock = MagicMock()
+        self.game.seat = [MagicMock(chips=10) for _ in range(3)]
+        self.game.start_round(screen_mock)
+        self.assertEqual(self.game.round, 1)
+        self.assertEqual(self.game.screen, screen_mock)
+        self.assertEqual(len(self.game.active_players), 3)
+
+    def test_take_blinds(self):
+        self.game.seat = [MagicMock(chips=20) for _ in range(3)]
+        self.game.take_blinds()
+        self.assertFalse(all(player.bet in [10, 20] for player in self.game.seat))
+
+    def test_handle_small_blind(self):
+        player = MagicMock(chips=5)
+        self.game.handle_small_blind(player)
+        self.assertTrue(player.all_in)
+        self.assertEqual(player.bet, 5)
+
+    def test_handle_big_blind(self):
+        player = MagicMock(chips=15)
+        self.game.handle_big_blind(player)
+        self.assertTrue(player.all_in)
+        self.assertEqual(player.bet, 15)
+
+    def test_add_flop_cards(self):
+        self.game.active_players = [MagicMock(hand=[]) for _ in range(3)]
+        self.game.table_cards = [MagicMock() for _ in range(5)]
+        self.game.add_flop_cards()
+        for player in self.game.active_players:
+            self.assertEqual(len(player.hand), 3)
+
+    def test_equal_bets(self):
+        player1 = Player()  # Initialize your player here
+        player1.bet = 10
+        player2 = Player()  # Initialize your player here
+        player2.bet = 10
+        self.game.active_players = [player1, player2]
+        self.game.highest_bet = 10
+
+        result = self.game.equal_bets()
+
+        self.assertTrue(result)
+
+    def test_check_end_round(self):
+        player = Player()  # Initialize your player here
+        self.game.active_players = [player]
+
+        result = self.game.check_end_round()
+
+        self.assertTrue(result)
+
+
+class Testmain(unittest.TestCase):
+
+    def setUp(self):
+        self.game = Game(num_User_players=3, num_AI_players=0)
+        self.player = UserPlayer()
+
+    def test_game_initialization(self):
+        self.game.active_players = [UserPlayer(), UserPlayer(), UserPlayer()]
+        self.assertEqual(len(self.game.active_players), 3)
+        self.assertNotIn(AIPlayer, self.game.active_players)
+
+    def test_player_initialization(self):
+        self.assertEqual(self.player.chips, 1000)
+        self.assertEqual(self.player.all_in, False)
+
+    @patch('builtins.input', return_value='fold')
+    def test_get_player_input_fold(self, input):
+        move, bet_amount = get_player_input(self.game, self.player)
+        self.assertEqual(move, 'fold')
+        self.assertEqual(bet_amount, 0)
+
+    @patch('builtins.input', return_value='check')
+    def test_get_player_input_check(self, input):
+        move, bet_amount = get_player_input(self.game, self.player)
+        self.assertEqual(move, 'check')
+        self.assertEqual(bet_amount, 0)
+
+
+
+class TestTakeBets(unittest.TestCase):
+    def setUp(self):
+        self.game = Game()
+        self.user_player = UserPlayer()
+        self.game.active_players = [self.user_player]
+        self.game.current_player = self.user_player
+
+    @patch('your_module.get_player_input', return_value=('check', 0))  # replace 'your_module' with the actual module name
+    def test_take_bets_user_player(self, mock_get_player_input):
+        result = take_bets(self.game)
+        self.assertEqual(result, 0)
+        mock_get_player_input.assert_called_once_with(self.game, self.user_player)
+
+
+class TestStartScreen(unittest.TestCase):
+    def setUp(self):
+        self.start_screen = start_screen()
+
+    def test_start_button(self):
+        self.assertIsInstance(self.start_screen.start_button, pygame.Rect)
+        self.assertEqual(self.start_screen.start_button.topleft, (300, 400))
+        self.assertEqual(self.start_screen.start_button.size, (200, 50))
+
+    def test_quit_button(self):
+        self.assertIsInstance(self.start_screen.quit_button, pygame.Rect)
+        self.assertEqual(self.start_screen.quit_button.topleft, (300, 500))
+        self.assertEqual(self.start_screen.quit_button.size, (200, 50))
+
+    def test_start_image(self):
+        self.assertIsInstance(self.start_screen.start_image, pygame.Surface)
+
+
+class TestGetPlayerInput(unittest.TestCase):
+    def setUp(self):
+        self.game = Game()
+        self.player = Player()
+        self.game.screen = MagicMock()
+
+    @patch('your_module.gui.Button')
+    @patch('your_module.gui.Slider')
+    def test_buttons_and_slider_creation(self, mock_slider, mock_button):
+        with patch('your_module.pygame.event.get', return_value=[]):
+            try:
+                get_player_input(self.game, self.player)
+            except:
+                pass
+
+        # Check that the buttons were created
+        self.assertEqual(mock_button.call_count, 2)
+        button_calls = [call.args for call in mock_button.call_args_list]
+        self.assertIn((700, 460, 80, 30, "Submit Bet", 20, True), button_calls)
+        self.assertIn((800, 460, 80, 30, "Cancel", 20, True), button_calls)
+
+        # Check that the slider was created
+        mock_slider.assert_called_once()
+
+
+class TestHandRank(unittest.TestCase):
+
+
+    def test_get_hand_rank_string(self):
+        self.card_values = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14}
+        self.card_suits = ['Spades', 'Hearts', 'Diamonds', 'Clubs']
+        cards = [Card(self.card_values['2'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['3'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['4'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['5'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['6'], Suit.HEARTS, "Images/cardBack_red5.png")]
+        self.assertEqual(get_hand_rank_string(cards), 'Straight6')
+
+    def test_get_hand_rank(self):
+        cards = [Card(self.card_values['2'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['3'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['4'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['5'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['6'], Suit.HEARTS, "Images/cardBack_red5.png")]
+        self.assertEqual(get_hand_rank(cards), (5, cards))  # Straight
+
+    def test_check_RoyalFlush(self):
+        cards = [Card(self.card_values['10'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['J'], Suit.HEARTS,"Images/cardBack_red5.png"),
+                 Card(self.card_values['Q'],  Suit.HEARTS,"Images/cardBack_red5.png"),
+                 Card(self.card_values['K'],  Suit.HEARTS,"Images/cardBack_red5.png"),
+                 Card(self.card_values['A'],  Suit.HEARTS,"Images/cardBack_red5.png")]
+        self.assertEqual(check_RoyalFlush(cards), (True, cards))
+
+    def test_check_StraightFlush(self):
+        cards = [Card(self.card_values['2'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['3'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['4'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['5'], Suit.HEARTS, "Images/cardBack_red5.png"),
+                 Card(self.card_values['6'],  Suit.HEARTS, "Images/cardBack_red5.png")]
+        self.assertEqual(check_StraightFlush(cards), (False, cards))
+
+    def test_four_of_a_kind(self):
+        cards = [
+            Card(8, Suit.HEARTS, "Images/cardBack_red5.png"),
+            Card(8, Suit.DIAMONDS, "Images/cardBack_red5.png"),
+            Card(8, Suit.CLUBS, "Images/cardBack_red5.png"),
+            Card(8, Suit.SPADES, "Images/cardBack_red5.png"),
+            Card(10, Suit.HEARTS, "Images/cardBack_red5.png")
+        ]
+        rank, _ = get_hand_rank(cards)
+        self.assertEqual(rank, 2)  # Four of a Kind
+
+
+    def test_check_HighCard(self):
+        # High Card: Ace high
+        high_card = [
+            Card(14, Suit.HEARTS, "Images/cardBack_red5.png"),
+            Card(10, Suit.DIAMONDS, "Images/cardBack_red5.png"),
+            Card(7, Suit.CLUBS, "Images/cardBack_red5.png"),
+            Card(5, Suit.SPADES, "Images/cardBack_red5.png"),
+            Card(2, Suit.HEARTS, "Images/cardBack_red5.png")
+        ]
+        self.assertTrue(check_HighCard(high_card)[0])
+
+
+    def test_check_TwoPair(self):
+        # Two Pair: Two Kings and Two Queens
+        two_pair = [
+            Card(13, Suit.HEARTS, "Images/cardBack_red5.png"),
+            Card(13, Suit.DIAMONDS, "Images/cardBack_red5.png"),
+            Card(12, Suit.CLUBS, "Images/cardBack_red5.png"),
+            Card(12, Suit.SPADES, "Images/cardBack_red5.png"),
+            Card(5, Suit.HEARTS, "Images/cardBack_red5.png")
+        ]
+        self.assertTrue(check_TwoPair(two_pair)[0])
+
+
+    def test_check_ThreeOfAKind(self):
+        # Three of a Kind: Three Jacks
+        three_of_a_kind = [
+            Card(11, Suit.HEARTS, "Images/cardBack_red5.png"),
+            Card(11, Suit.DIAMONDS, "Images/cardBack_red5.png"),
+            Card(11, Suit.CLUBS, "Images/cardBack_red5.png"),
+            Card(7, Suit.SPADES, "Images/cardBack_red5.png"),
+            Card(5, Suit.HEARTS, "Images/cardBack_red5.png")
+        ]
+        self.assertTrue(check_ThreeOfAKind(three_of_a_kind)[0])
+
+
+if __name__ == '__main__':
+    unittest.main()
