@@ -7,6 +7,8 @@ from game_model import Game, Player, UserPlayer
 
 
 screen, clock = gui.init_pygame()
+
+
 def main():
     #Initialize game instance
     game = Game(num_User_players=3, num_AI_players=0)

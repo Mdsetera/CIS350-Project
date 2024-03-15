@@ -18,11 +18,12 @@ import poker_gui as gui
 
 
 class Suit(Enum):
-#determines the suit of each card
+    #determines the suit of each card
     HEARTS = 1
     DIAMONDS = 2
     SPADES = 3
     CLUBS = 4
+
 
 class Game:
     def __init__(self, num_User_players = 3, num_AI_players = 0):
@@ -30,7 +31,7 @@ class Game:
         self.table_cards = []
         self.seat = []
         self.active_players = []
-        self.current_player:Player = None
+        self.current_player: Player = None
         self.pot = [0]
         self.highest_bet = 0
         self.sml_blind = 10
@@ -40,31 +41,20 @@ class Game:
         self.dealer_seat = 0
         self.screen, self.clock = gui.init_pygame()
 
-        for x in range(num_User_players):#add user players
+        for x in range(num_User_players): #add user players
             self.seat.append(UserPlayer())
-        for x in range(num_AI_players):#add AI players
+        for x in range(num_AI_players): #add AI players
             self.seat.append(AIPlayer())
         for player in self.seat:
             player.seat_number = self.seat.index(player)
 
-        ##everyone is now seated at the table
-
-
+        #everyone is now seated at the table
 
     def start_round(self, screen):
         ##deal the cards
         self.round += 1
         self.screen = screen
         self.active_players = [player for player in self.seat if player.chips > 0]
-
-        #self.take_first_round_bets()
-        #self.update_pot()
-        # if self.round == 1:
-        #     self.take_bets(gui.show_flop, 3)
-        #elif self.round == 2:
-            #self.take_bets(gui.show_turn, 1)
-        #elif self.round == 3:
-            #self.take_bets(gui.show_river, 1)
 
     def deal_initial_cards(self):
         print('deal_initial_cards')
@@ -173,6 +163,7 @@ class Game:
             next_player = self.active_players[index + 1]
         print("player", current_player, "->", next_player)
         return next_player
+
     def equal_bets(self):
         #sent a list of players, returns True if all bets are equal to the highest bet
         print('equal bets? ->', self.active_players, "\nhighest bet ->", self.highest_bet)
@@ -181,10 +172,12 @@ class Game:
                 return False
         print('equal bets!!!')
         return True
+
     def check_end_round(self) -> bool:
         if len(self.active_players) == 1:
             return True
         return False
+
     def end_round(self, winners:list):
         #recives a list of the winners of the round
         #splits the pot between the winners
@@ -220,6 +213,7 @@ class Game:
     @property
     def dealer_seat(self):
         return self._dealer_seat
+
     @dealer_seat.setter
     def dealer_seat(self, num):
         if num == len(self.seat):
@@ -230,6 +224,7 @@ class Game:
             raise ValueError('invalid dealer seat')
         else:
             self._dealer_seat = num
+
     def check_end_game(self) -> bool:
         #checks all players chip count,
         x = 0
@@ -242,12 +237,15 @@ class Game:
             return True
         else:
             return False
+
     def compare_hands(self, player:list)->list:
         #recieves a list of players
         #compares the hands of each of the players
         #returns list of player(s) with best hand
         #FIXME build this method
         return [player[0]]
+
+
 class Deck:
     def __init__(self):
         self.stack = []
@@ -273,11 +271,13 @@ class Deck:
             self.stack.append(Card(x,Suit.DIAMONDS, "Images/card" + "Diamonds" + str(x) + ".png"))
             self.stack.append(Card(x,Suit.SPADES, "Images/card" + "Spades" + str(x) + ".png"))
             self.stack.append(Card(x,Suit.CLUBS, "Images/card" + "Clubs" + str(x) + ".png"))
+
     def __repr__(self):
         my_str = ""
         for card in self.stack:
             my_str += card.__repr__() + '\n'
         return my_str
+
 
 class Card:
     def __init__(self, val: int, suit: Suit, image_path):
@@ -296,6 +296,7 @@ class Card:
     def __repr__(self):
         return f'{self.value},{self.suit},'
 
+
 class Player:
     def __init__(self):
         self.hand = []
@@ -309,8 +310,10 @@ class Player:
 
     def __str__(self):
         return f'Player {self.seat_number}'
+
     def __repr__(self):
         return f'Player[{self.seat_number}]'
+
     @property
     def chips(self):
         return self._chips
@@ -323,6 +326,7 @@ class Player:
             raise ValueError('chip count must be a multiple of 5')
         else:
             self._chips = num
+
     def _play(self, game:Game, input) -> bool :
         """
         Will control each turn that the player takes
@@ -338,9 +342,11 @@ class Player:
 
 
         return False
+
     def _get_input(self, game:Game) ->str:
         print('super class is being called')
         return 'fold'
+
     def get_moves(self, game:Game):
         ##takes in game state
         #returns a dictionary with the availble moves a player can take at the current moment
@@ -366,6 +372,7 @@ class Player:
             moves["bet"] = True
 
         return moves
+
     def _bet(self, game:Game, amount:int):
         """
         player bets an amount of their chips,
@@ -383,8 +390,6 @@ class Player:
             self.chips -= amount
 
         return True
-
-
 
     def get_bet_range(self, game:Game) -> (int,int):
         """
@@ -414,6 +419,7 @@ class Player:
         min_bet = game.highest_bet + game.big_blind
 
         return min_bet, max_bet
+
     def _fold(self, game:Game):
         """
         player ends involvement in the round and forfeits eligibility to the pot
@@ -422,6 +428,7 @@ class Player:
         game.pot[self.pot_eligibility] += self.bet
         self.pot_eligibility = -1
         game.active_players.remove(self)
+
     def _call(self, game:Game):
         """
         player matches the highest bet on the table
@@ -437,15 +444,18 @@ class Player:
             self.chips += self.bet
             self.bet = game.highest_bet
             self.chips -= self.bet
+
     def check_hand_rank(self, hand:list[Card]) -> None:
         """
         given a hand of cards, returns the type of hand
         sets the hand rank and best card
         """
 
+
 class UserPlayer(Player):
     def __init__(self):
         super().__init__()
+
     def _play(self, game, input)->bool:
         """
         receives the input of the player, sends it to the super class
@@ -453,9 +463,11 @@ class UserPlayer(Player):
         super()._play(game, input)
         return False
 
+
 class AIPlayer(Player):
     def __init__(self):
         super().__init__()
+
     def _play(self, game)->bool:
         """
         controls the turn of a AI player
@@ -463,13 +475,4 @@ class AIPlayer(Player):
         input = ("fold",0)
         super()._play(game, input)
         return False
-'''
-def main():
-    deck = Deck()
-    print(deck)
-    print(len(deck.stack))
 
-
-if __name__ == '__main__':
-    main()
-'''
