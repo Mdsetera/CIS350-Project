@@ -1,6 +1,6 @@
 *make sure you write an exception for if you are sent more than seven cards*
 
-Royal/Stragiht Flush: straight (decending order) -> rest of cards (decending order)
+Royal/Stragiht Flush: straight (decending order) -> rest of flush cards(decending order) -> rest of cards (decending order)
 Four of a Kind: four of a kind -> rest of cards (decending order)
 Full House: highest three of a kind -> highest pair -> rest of cards (decending order)
 Flush: flush (decending order) -> rest of cards (decending order)

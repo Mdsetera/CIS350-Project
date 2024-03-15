@@ -51,18 +51,17 @@ def check_RoyalFlush(cards:[Card])->(bool, [Card]):
         return(True, newCards)
     return (False, newCards)
 def check_StraightFlush(cards:[Card])->(bool, [Card]):
-    #FIXME if a pair/TOAK exsists and a straight exsists, then this might fail, its super rare so its fine for now
     #return (False, cards)
     if len(cards) < 5: return (False, cards)
-
-    is_straight, new_cards = check_Straight(cards)
-    if is_straight:
-        suit = cards[0].suit
-        for c in cards[0:5]:
-            if c.suit != suit:
-                if len(new_cards) != len(cards): raise ValueError('should return same amount of cards')
-                return (False, new_cards)
-    return (True, new_cards)
+    is_Flush, cards = check_Flush(cards)
+    if is_Flush:
+        flush_suit = cards[0].suit
+        is_Straight, flush_cards = check_Straight([card for card in cards if card.suit.value == flush_suit.value])
+        if is_Straight:
+            new_cards = flush_cards
+            ROC = sorted([card for card in cards if card not in new_cards], reverse=True)
+            return (True, new_cards)
+    return (False, cards)
 def check_FourOfAKind(cards:[Card])->(bool, [Card]):
     if len(cards) < 4: return (False, cards)
     is_FOAK = False

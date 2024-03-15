@@ -53,6 +53,7 @@ class Game:
 
 
     def start_round(self, screen):
+        #iniitializes new round of play
         ##deal the cards
         self.round += 1
         self.screen = screen
@@ -68,6 +69,12 @@ class Game:
             #self.take_bets(gui.show_river, 1)
 
     def deal_initial_cards(self):
+        """
+        deals two cards to each player
+        and assigns five table cards to be shared
+        amongst all players
+        :return:
+        """
         print('deal_initial_cards')
         if not self.table_cards:
             for player in self.active_players:
@@ -88,6 +95,16 @@ class Game:
             print('Table cards', self.table_cards)
 
     def take_blinds(self):
+        """
+        blinds technically start the play
+        big/little blinds must be taken in order for that person to play
+        if there are only two players it only handles the big blind
+        otherwise
+        little blind is left of the dealer
+        big blind is left of little blind
+        if player does not have enough for the blind the remainder of their chips are taken and they go allin
+        :return:
+        """
         player_turn = self.dealer_seat + 1 if self.dealer_seat + 1 < len(self.seat) else 0
         self.current_player = self.seat[player_turn]
         if self.current_player in self.active_players:
@@ -103,6 +120,7 @@ class Game:
         print('blinds taken')
 
     def handle_small_blind(self, current_player):
+        #handles the small blind
         if current_player.chips < self.sml_blind:
             current_player.bet = current_player.chips
             current_player.all_in = True
@@ -113,6 +131,7 @@ class Game:
 
 
     def handle_big_blind(self, current_player):
+        #hanldes the big blind
         if current_player.chips < self.big_blind:
             current_player.bet = current_player.chips
             current_player.all_in = True
@@ -123,19 +142,29 @@ class Game:
             self.highest_bet = current_player.bet
 
     def add_flop_cards(self):
+        """
+        adds flop cards to each players hand
+        :return:
+        """
         for player in self.active_players:
             player.hand.append(self.table_cards[0])
             player.hand.append(self.table_cards[1])
             player.hand.append(self.table_cards[2])
         print('flop cards added')
     def add_turn_cards(self):
+        #adds turn card to each players hand
         for player in self.active_players: player.hand.append(self.table_cards[3])
         print('turn card added')
     def add_river_cards(self):
+        #adds river card to each players hand
         for player in self.active_players: player.hand.append(self.table_cards[-1])
         print('river card added')
 
     def update_highest_bet(self):
+        """
+        finds active player with the highest bet and updates game.highest_bet
+        :return:
+        """
         big_bet = 0
         for player in self.active_players:
             if player.bet > big_bet:
@@ -144,6 +173,16 @@ class Game:
         print('highest bet ->', self.highest_bet)
 
     def update_pot(self):
+        """
+        adds every players bet to the pot
+        assigns each player a pot eligibility
+        based on how much they bet
+        players are only eligible to recieve they amount that they bet from other players
+        i,.e. player 1 bets 5 chips and is allin and player 2 and 3 bets 10 chips
+        if player 1 wins the hand, player 1 recieves 5 from player 2 and 5 from player 3
+        the remainder of player 2/3s chips are returned to them
+        :return:
+        """
         for x in range(len(self.active_players)):
             self.pot.append(0)
         players_with_bets = [player for player in self.active_players if player.bet > 0]
@@ -171,6 +210,11 @@ class Game:
         print('pot updated')
 
     def next_player(self, current_player):
+        """
+        receives a player and returns the player who will take their turn next
+        :param current_player:
+        :return:
+        """
         #returns the player whos turn is next
         next_player = None
         index = self.active_players.index(current_player)
@@ -191,10 +235,20 @@ class Game:
         print('equal bets!!!')
         return True
     def check_end_round(self) -> bool:
+        #if there is only one player left return true
         if len(self.active_players) == 1:
             return True
         return False
     def end_round(self, winners:list):
+        """
+        receives the winner of the round and awards them chips based on their eligibilty
+        if there are multiple winners the pot is split between them
+        gives money back to players with higher eligibility
+        resets and increments game state values
+        resets player values
+        :param winners:
+        :return:
+        """
         #recives a list of the winners of the round
         #splits the pot between the winners
         #gives money back to people with higher pot eligibility
@@ -243,7 +297,7 @@ class Game:
         else:
             self._dealer_seat = num
     def check_end_game(self) -> bool:
-        #checks all players chip count,
+        #returns true if only one player has chips
         x = 0
         for player in self.seat:
             if player.chips > 0:
@@ -255,9 +309,14 @@ class Game:
         else:
             return False
     def compare_hands(self, players:list)->list:
-        #recieves a list of players
-        #compares the hands of each of the players
-        #returns list of player(s) with best hand
+        """
+        recieves a list of players
+        compares the hands of each of the players
+        returns list of player(s) with best hand
+        :param players: players whos hands to compare
+        :return:
+        """
+
         #FIXME build this method
         best_hand_rank = 100 #lowest number is best
         hand_rank = {}
@@ -332,6 +391,8 @@ class Card:
 
     def __repr__(self):
         return f'{self.value},{self.suit}'
+
+    #these are used so you dont have to add .value to compare card values
     def __lt__(self, other):
         return self.value < other.value
     def __gt__(self, other):
@@ -386,8 +447,12 @@ class Player:
         print('super class is being called')
         return 'fold'
     def get_moves(self, game:Game):
-        ##takes in game state
-        #returns a dictionary with the availble moves a player can take at the current moment
+        """
+        takes in game state
+        returns a dictionary with the availble moves a player can take at the current moment
+        :param game: current game
+        :return: moves dict
+        """
         moves = {"fold": True, "check": False, "call": False, "bet": False}
         if self.all_in:
             return {"fold": False, "check": False, "call": False, "bet": False}
@@ -428,14 +493,12 @@ class Player:
             if self.chips == 0: self.all_in = True
         return True
 
-
-
     def get_bet_range(self, game:Game) -> (int,int):
         """
         Used to get the min and max values that the current player can bet
         if min_bet > max_bet, that means the current player cannot bet
         :param game:
-        :return: (int, int)
+        :return: (min bet, max bet)
         """
         highest_bet = 0
         highest_chip_count = 0
@@ -458,18 +521,26 @@ class Player:
         min_bet = game.highest_bet + game.big_blind
 
         return min_bet, max_bet
-    def get_hand_rank(self):
+    def get_hand_rank(self) -> (int, [Card]):
+        """
+        resets player hand to new order
+        :return: (hand rank, player hand in new order)
+        """
         if self.hand == []:
             return (-1, self.hand)
         import hand_rank_tests as rank
         rank, self.hand = rank.get_hand_rank(self.hand)
         return rank, self.hand
-    def get_hand_rank_str(self):
+    def get_hand_rank_str(self) ->str:
+        """
+        :return: hand rank as a string
+        """
         if self.hand == []:
             return 'No cards'
         import hand_rank_tests as rank
         return rank.get_hand_rank_string(self.hand)
     def _check(self, game:Game):
+        #check does nothing lol
         pass
     def _fold(self, game:Game):
         """
@@ -512,7 +583,7 @@ class AIPlayer(Player):
         super().__init__()
     def _play(self, game)->bool:
         """
-        controls the turn of a AI player
+        will control the turn of a AI player
         """
         input = ("fold",0)
         super()._play(game, input)
