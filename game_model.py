@@ -381,8 +381,8 @@ class Card:
         self.value = val
         self.front_image = pygame.image.load(image_path)
         self.back_image = pygame.image.load("Images/cardBack_red5.png")
-        self.width = self.front_image.get_width() * .8
-        self.height = self.front_image.get_height() * .8
+        self.width = self.front_image.get_width() * .6
+        self.height = self.front_image.get_height() * .6
         self.front_image = pygame.transform.scale(self.front_image, (self.width, self.height))
         self.back_image = pygame.transform.scale(self.back_image, (self.width, self.height))
         self.rect = self.front_image.get_rect()

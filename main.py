@@ -97,7 +97,7 @@ def main():
             game.end_round(winners)
             game.update_pot()
             gui.update_labels(game)
-        running = False
+
         print('game loop has ended')
 #^^^^^^^^^^^^^^^ The GAME LOOP ^^^^^^^^^^^^^^^#
         pygame.display.flip()
@@ -110,6 +110,7 @@ def main():
                 gui.print_winner(game.screen, player)
                 break
         pygame.time.delay(5000)
+        running = False
         pygame.quit()
         exit()
 def take_bets(game:Game):
@@ -164,7 +165,7 @@ def get_player_input(game: Game, player: Player) -> (str,int):
     TIMEREVENT = pygame.USEREVENT + 1
     #create_timer
     pygame.time.set_timer(TIMEREVENT, 1000)
-    countdown_time = 100 #length of the timer in seconds
+    countdown_time = 99 #length of the timer in seconds DONT GO OVER 99 causes render issues
     num_time_passed = 0
     font = pygame.font.Font(None, 55)
 
@@ -192,13 +193,15 @@ def get_player_input(game: Game, player: Player) -> (str,int):
                 elif num_time_passed >= 3 and player.all_in:
                     return ('check', 0)
 
+        timer_positions = [(250,465),(140,255),(470,50),(640,255)]
+        pos = timer_positions[game.seat.index(player)]
         #create rect to clear the timer space before incrementing countdown to prevent overlapping
-        timer_rect = pygame.Rect(460, 25, 100, 55)
+        timer_rect = pygame.Rect(pos[0], pos[1],50, 50)
         game.screen.fill((0, 128, 0), timer_rect)
 
         #update timer while no input recieved
         timer_text = font.render(str(countdown_time), True, (255, 255, 255))
-        game.screen.blit(timer_text, (460, 25))
+        game.screen.blit(timer_text, pos)
         pygame.display.flip()
 
         mouse_pos = pygame.mouse.get_pos()
@@ -206,10 +209,13 @@ def get_player_input(game: Game, player: Player) -> (str,int):
         for button in gui.buttons:
             if button.check_click(mouse_pos, events):
                 if button.text == "Fold" and button.enabled:
+                    game.screen.fill((0, 128, 0), timer_rect)
                     return ('fold', 0)
                 elif button.text == "Check" and button.enabled:
+                    game.screen.fill((0, 128, 0), timer_rect)
                     return ('check', 0)
                 elif button.text == 'Call' and button.enabled:
+                    game.screen.fill((0, 128, 0), timer_rect)
                     return ('call', 0)
                 elif button.text == 'Bet' and button.enabled:
                     range = player.get_bet_range(game)
@@ -241,6 +247,7 @@ def get_player_input(game: Game, player: Player) -> (str,int):
                         gui.update_labels(game)
                         pygame.display.flip()
                         input_received = True
+                        game.screen.fill((0, 128, 0), timer_rect)
                         return ('bet', playerbet)
                     if cancel_button.check_click(mouse_pos, events):
                         betslider = None
@@ -271,7 +278,10 @@ def get_player_input(game: Game, player: Player) -> (str,int):
     #raise ValueError('no input received')
     return ('fold', 0)
 
-
+def print_winners(winners):
+    for p in winners:
+        print(p, 'takes the hand')
+    #winner_label = Label()
 
 if __name__ == '__main__':
     start_screen()

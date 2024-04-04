@@ -3,7 +3,7 @@ import os.path
 import pygame
 from enum import Enum
 
-window_start_Width = 1000
+window_start_Width = 1250
 window_start_Height = 750
 
 buttons = []
@@ -52,17 +52,17 @@ def show_flop(game, screen):
     #once first round of betting is over  (so like preflop)
     flop_1 = game.table_cards[0]
     flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
-    flip_card1.midbottom = (380, 325)
+    flip_card1.midbottom = (300, 325)
     screen.blit(flop_1.front_image, flip_card1)
 
     flop_2 = game.table_cards[1]
     flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
-    flip_card2.midbottom = (440, 325)
+    flip_card2.midbottom = (440-80, 325)
     screen.blit(flop_2.front_image, flip_card2)
 
     flop_3 = game.table_cards[2]
     flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
-    flip_card3.midbottom = (500, 325)
+    flip_card3.midbottom = (500-80, 325)
     screen.blit(flop_3.front_image, flip_card3)
 
 
@@ -77,7 +77,7 @@ def show_turn(game, screen):
     """
     turn_card = game.table_cards[3]
     flip_turn = pygame.Rect(0, 0, turn_card.width, turn_card.height)
-    flip_turn.midbottom = (560, 325)
+    flip_turn.midbottom = (560-80, 325)
     screen.blit(turn_card.front_image, flip_turn)
 
 
@@ -91,7 +91,7 @@ def show_river(game, screen):
     """
     river_card = game.table_cards[-1]
     flip_river = pygame.Rect(0, 0, river_card.width, river_card.height)
-    flip_river.midbottom = (620, 325)
+    flip_river.midbottom = (620-80, 325)
     screen.blit(river_card.front_image, flip_river)
 
 
@@ -115,37 +115,39 @@ def create_cards(game, screen):
         for j, card in enumerate(player.hand):
             if player == game.seat[0]:
                 if j == 0:
-                    player1_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player1_card1.topleft = (5, 200)
+                    player0_card1 = pygame.Rect(0, 0, card.width, card.height)
+                    player0_card1.topleft = (350, 445)
                     card_rotate1 = pygame.transform.rotate(card.front_image, 90)
-                    screen.blit(card_rotate1, player1_card1)
+                    screen.blit(card.front_image, player0_card1)
                 elif j == 1:
-                    player1_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player1_card2.topleft = (5, 250)
+                    player0_card2 = pygame.Rect(0, 0, card.width, card.height)
+                    player0_card2.topleft = (380, 445)
                     card_rotate2 = pygame.transform.rotate(card.front_image, 90)
-                    screen.blit(card_rotate2, player1_card2)
+                    screen.blit(card.front_image, player0_card2)
             elif player == game.seat[1]:
                 if j == 0:
-                    player2_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player2_card1.topleft = (400, 585)
-                    screen.blit(card.front_image, player2_card1)
-                    pygame.display.update(player2_card1)
+                    player1_card1 = pygame.Rect(0, 0, card.width, card.height)
+                    player1_card1.topleft = (15, 220)
+                    card_rotate1 = pygame.transform.rotate(card.front_image, 90)
+                    screen.blit(card_rotate1, player1_card1)
+                    pygame.display.update(player1_card1)
                 elif j == 1:
-                    player2_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player2_card2.topleft = (450, 585)
-                    screen.blit(card.front_image, player2_card2)
-                    pygame.display.update(player2_card2)
+                    player1_card2 = pygame.Rect(0, 0, card.width, card.height)
+                    player1_card2.topleft = (15, 250)
+                    card_rotate2 = pygame.transform.rotate(card.front_image, 90)
+                    screen.blit(card_rotate2, player1_card2)
+                    pygame.display.update(player1_card2)
             elif player == game.seat[2]:
                 if j == 0:
-                    player3_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player3_card1.topleft = (840, 200)
+                    player2_card1 = pygame.Rect(0, 0, card.width, card.height)
+                    player2_card1.topleft = (350, 15)
                     card_rotate2 = pygame.transform.rotate(card.front_image, 270)
-                    screen.blit(card_rotate2, player3_card1)
+                    screen.blit(card.front_image, player2_card1)
                 elif j == 1:
-                    player3_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player3_card2.topleft = (840, 250)
+                    player2_card2 = pygame.Rect(0, 0, card.width, card.height)
+                    player2_card2.topleft = (380, 15)
                     card_rotate2 = pygame.transform.rotate(card.front_image, 270)
-                    screen.blit(card_rotate2, player3_card2)
+                    screen.blit(card.front_image, player2_card2)
 
     pygame.display.update()
 
@@ -269,13 +271,14 @@ def create_labels(game):
     l_dealer.draw(game.screen)
     label_dealer.append(l_dealer)
 
-    label0_text = f'Player 0 Balance: {int(game.seat[0].chips)}'
+    label0_text = f'{int(game.seat[0].chips)}'
     label0_bet_text = f'Player 0 Bet: {int(game.seat[0].bet)}'
     label0_hand_text = game.seat[0].get_hand_rank_str()
     #Player 0 labels
-    player0_balance = Label(label0_text, 25, Color.LGREEN, (45, 370))
-    player0_bet = Label(label0_bet_text, 25, Color.LGREEN, (10, 370))
-    player0_hand = Label(label0_hand_text, 25, Color.LGREEN, (80, 370))
+    player0_balance = Label(label0_text, 25, Color.BLACK, (340, 570))
+    player0_bet = Label(label0_bet_text, 25, Color.LGREEN, (565, 710), visible=game.seat[0].bet>0)
+    player0_hand = Label(label0_hand_text, 25, Color.BLACK, (340, 600))
+    chip1_player0 = Chip((300, 560))
     label_player_hands.append(player0_hand)
     labels_chip_count.append(player0_balance)
     labels_player_bet.append(player0_bet)
@@ -284,18 +287,17 @@ def create_labels(game):
     label1_bet_text = f'Player 1 Bet: {int(game.seat[1].bet)}'
     label1_hand_text = game.seat[1].get_hand_rank_str()
     #Player 1 labels
-    player1_balance = Label(label1_text, 40, Color.LGREEN, (565, 670))
-    player1_bet = Label(label1_bet_text, 40, Color.LGREEN, (565, 710))
-    player1_hand = Label(label1_hand_text, 40, Color.LGREEN, (420, 550))
+    player1_balance = Label(label1_text, 25, Color.LGREEN, (45, 370))
+    player1_bet = Label(label1_bet_text, 25, Color.LGREEN, (10, 370), visible=game.seat[1].bet>0)
+    player1_hand = Label(label1_hand_text, 25, Color.LGREEN, (80, 370))
     label_player_hands.append(player1_hand)
     labels_chip_count.append(player1_balance)
     labels_player_bet.append(player1_bet)
 
+    #Player 2 labels
     label2_text = f'Player 2 Balance: {int(game.seat[2].chips)}'
     label2_bet_text = f'Player 2 Bet: {int(game.seat[2].bet)}'
     label2_hand_text = game.seat[2].get_hand_rank_str()
-    #Player 2 labels
-
     player2_balance = Label(label2_text, 25, Color.LGREEN, (930, 410))
     player2_bet = Label(label2_bet_text, 25, Color.LGREEN, (965, 480))
     player2_hand = Label(label2_hand_text, 25, Color.LGREEN, (895, 480))
@@ -303,24 +305,25 @@ def create_labels(game):
     labels_chip_count.append(player2_balance)
     labels_player_bet.append(player2_bet)
 
-    player0_balance.rotate(270)
-    player0_bet.rotate(270)
-    player0_hand.rotate(270)
-    player2_balance.rotate(90)
-    player2_bet.rotate(90)
-    player2_hand.rotate(90)
+
+    #player0_balance.rotate(270)
+    #player0_bet.rotate(270)
+    #player0_hand.rotate(270)
+    #player2_balance.rotate(90)
+    #player2_bet.rotate(90)
+    #player2_hand.rotate(90)
 
     player0_balance.draw(game.screen)
-    player0_bet.draw(game.screen)
+    #player0_bet.draw(game.screen)
     player0_hand.draw(game.screen)
     player1_balance.draw(game.screen)
-    player1_bet.draw(game.screen)
-    player1_hand.draw(game.screen)
+    #player1_bet.draw(game.screen)
+    #player1_hand.draw(game.screen)
     player2_balance.draw(game.screen)
-    player2_bet.draw(game.screen)
-    player2_hand.draw(game.screen)
+    #player2_bet.draw(game.screen)
+    #player2_hand.draw(game.screen)
 
-    chip1_player0 = Chip((38, 560))
+
     chip2_player0 = Chip((5, 530))
     chip1_player0.change_size(.5)
     chip2_player0.change_size(.5)
