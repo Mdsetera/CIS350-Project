@@ -3,8 +3,8 @@ import os.path
 import pygame
 from enum import Enum
 
-window_start_Width = 1250
-window_start_Height = 750
+window_start_Width = 805
+window_start_Height = 685
 
 buttons = []
 labels_chip_count = []
@@ -13,6 +13,7 @@ label_pot = []
 label_dealer = []
 label_current_player_turn = []
 label_player_hands = []
+bet_chips = []
 class Color(Enum):
     """
     holds (R,G,B) values for different colors
@@ -112,7 +113,9 @@ def create_cards(game, screen):
 
 #FIXME rerwite to only include active players in release 2
     for player in game.seat:
+
         for j, card in enumerate(player.hand):
+
             if player == game.seat[0]:
                 if j == 0:
                     player0_card1 = pygame.Rect(0, 0, card.width, card.height)
@@ -143,11 +146,26 @@ def create_cards(game, screen):
                     player2_card1.topleft = (350, 15)
                     card_rotate2 = pygame.transform.rotate(card.front_image, 270)
                     screen.blit(card.front_image, player2_card1)
+                    pygame.display.update(player2_card1)
                 elif j == 1:
                     player2_card2 = pygame.Rect(0, 0, card.width, card.height)
                     player2_card2.topleft = (380, 15)
                     card_rotate2 = pygame.transform.rotate(card.front_image, 270)
                     screen.blit(card.front_image, player2_card2)
+                    pygame.display.update(player2_card2)
+            elif player == game.seat[3]:
+                if j == 0:
+                    player3_card1 = pygame.Rect(0, 0, card.width, card.height)
+                    player3_card1.topleft = (675, 220)
+                    card_rotate1 = pygame.transform.rotate(card.front_image, 270)
+                    screen.blit(card_rotate1, player3_card1)
+                    pygame.display.update(player3_card1)
+                elif j == 1:
+                    player3_card2 = pygame.Rect(0, 0, card.width, card.height)
+                    player3_card2.topleft = (675, 250)
+                    card_rotate2 = pygame.transform.rotate(card.front_image, 270)
+                    screen.blit(card_rotate2, player3_card2)
+                    pygame.display.update(player3_card2)
 
     pygame.display.update()
 
@@ -218,10 +236,10 @@ def create_buttons(game):
     :param game:
     :return:
     """
-    fold_button = Button(600, 550, 100, 50, "Fold", 30, False)
-    check_button = Button(710, 550, 100, 50, "Check", 30, False)
-    call_button = Button(600, 610, 100, 50, "Call", 30, False)
-    bet_button = Button(710, 610, 100, 50, "Bet", 30, False)
+    fold_button = Button(365, 630, 100, 50, "Fold", 30, False)
+    check_button = Button(475, 630, 100, 50, "Check", 30, False)
+    call_button = Button(585, 630, 100, 50, "Call", 30, False)
+    bet_button = Button(695, 630, 100, 50, "Bet", 30, False)
     fold_button.draw(game.screen)
     check_button.draw(game.screen)
     call_button.draw(game.screen)
@@ -260,7 +278,8 @@ def create_labels(game):
     :return:
     """
     import hand_rank_tests as rank
-    global labels_chip_count,labels_player_bet, label_pot, label_dealer, label_current_player_turn
+    global labels_chip_count,labels_player_bet, label_pot, label_dealer, label_current_player_turn, bet_chips
+    bet_chips = []
     labels_chip_count = []
     labels_player_bet = []
     label_pot = []
@@ -271,27 +290,31 @@ def create_labels(game):
     l_dealer.draw(game.screen)
     label_dealer.append(l_dealer)
 
-    label0_text = f'{int(game.seat[0].chips)}'
-    label0_bet_text = f'Player 0 Bet: {int(game.seat[0].bet)}'
-    label0_hand_text = game.seat[0].get_hand_rank_str()
     #Player 0 labels
-    player0_balance = Label(label0_text, 25, Color.BLACK, (390, 570))
-    player0_bet = Label(label0_bet_text, 25, Color.LGREEN, (565, 710), visible=game.seat[0].bet>0)
+    label0_text = f'{int(game.seat[0].chips)}'
+    label0_bet_text = f'{int(game.seat[0].bet)}'
+    label0_hand_text = game.seat[0].get_hand_rank_str()
+    player0_balance = Label(label0_text, 25, Color.BLACK, (380, 564))
+    player0_bet = Label(label0_bet_text, 25, Color.WHITE, (380, 420), visible=game.seat[0].bet>0)
     player0_hand = Label(label0_hand_text, 25, Color.BLACK, (340, 600))
     chip1_player0 = Chip((350, 563))
     chip1_player0.change_size(.3)
+    bet_chips.append(Chip((350, 419), visible=game.seat[0].bet>0))
+    bet_chips[0].change_size(.3)
     label_player_hands.append(player0_hand)
     labels_chip_count.append(player0_balance)
     labels_player_bet.append(player0_bet)
 
     #Player 1 labels
     label1_text = f'{int(game.seat[1].chips)}'
-    label1_bet_text = f'Player 1 Bet: {int(game.seat[1].bet)}'
+    label1_bet_text = f'{int(game.seat[1].bet)}'
     label1_hand_text = game.seat[1].get_hand_rank_str()
-    player1_balance = Label(label1_text, 25, Color.BLACK, (55, 345))
+    player1_balance = Label(label1_text, 25, Color.BLACK, (45, 340))
     chip1_player1 = Chip((15, 339))
     chip1_player1.change_size(.3)
-    player1_bet = Label(label1_bet_text, 25, Color.LGREEN, (10, 370), visible=game.seat[1].bet>0)
+    bet_chips.append(Chip((120, 340), visible=game.seat[1].bet>0))
+    bet_chips[1].change_size(.3)
+    player1_bet = Label(label1_bet_text, 25, Color.WHITE, (145, 340), visible=game.seat[1].bet>0)
     player1_hand = Label(label1_hand_text, 25, Color.LGREEN, (80, 370))
     label_player_hands.append(player1_hand)
     labels_chip_count.append(player1_balance)
@@ -299,46 +322,70 @@ def create_labels(game):
 
     #Player 2 labels
     label2_text = f'{int(game.seat[2].chips)}'
-    label2_bet_text = f'Player 2 Bet: {int(game.seat[2].bet)}'
+    label2_bet_text = f'{int(game.seat[2].bet)}'
     label2_hand_text = game.seat[2].get_hand_rank_str()
-    player2_balance = Label(label2_text, 25, Color.LGREEN, (400, 140))
+    player2_balance = Label(label2_text, 25, Color.BLACK, (380, 135))
     chip1_player2 = Chip((350, 134))
     chip1_player2.change_size(.3)
-    player2_bet = Label(label2_bet_text, 25, Color.LGREEN, (965, 480))
+    bet_chips.append(Chip((350, 160), visible=game.seat[2].bet>0))
+    bet_chips[2].change_size(.3)
+    player2_bet = Label(label2_bet_text, 25, Color.WHITE, (380, 161), visible=game.seat[2].bet>0)
     player2_hand = Label(label2_hand_text, 25, Color.LGREEN, (895, 480))
     label_player_hands.append(player2_hand)
     labels_chip_count.append(player2_balance)
     labels_player_bet.append(player2_bet)
 
 
+    #Player 3 labels
+    label3_text = f'{int(game.seat[3].chips)}'
+    label3_bet_text = f'{int(game.seat[3].bet)}'
+    label3_hand_text = game.seat[2].get_hand_rank_str()
+    player3_balance = Label(label3_text, 25, Color.BLACK, (700, 340))
+    chip1_player3 = Chip((675, 339))
+    chip1_player3.change_size(.3)
+    bet_chips.append(Chip((620, 360), visible=game.seat[3].bet>0))
+    bet_chips[3].change_size(.3)
+    player3_bet = Label(label3_bet_text, 25, Color.WHITE, (650, 361), visible=game.seat[3].bet>0)
+    player3_hand = Label(label3_hand_text, 25, Color.LGREEN, (895, 480))
+    label_player_hands.append(player3_hand)
+    labels_chip_count.append(player3_balance)
+    labels_player_bet.append(player3_bet)
+
 
     player0_balance.draw(game.screen)
-    #player0_bet.draw(game.screen)
-    player0_hand.draw(game.screen)
+    player0_bet.draw(game.screen)
+    #player0_hand.draw(game.screen)
     player1_balance.draw(game.screen)
-    #player1_bet.draw(game.screen)
+    player1_bet.draw(game.screen)
     #player1_hand.draw(game.screen)
     player2_balance.draw(game.screen)
-    #player2_bet.draw(game.screen)
+    player2_bet.draw(game.screen)
     #player2_hand.draw(game.screen)
-
-
-
+    player3_balance.draw(game.screen)
+    player3_bet.draw(game.screen)
 
 
 
     chip1_player0.draw(game.screen)
     chip1_player1.draw(game.screen)
     chip1_player2.draw(game.screen)
+    chip1_player3.draw(game.screen)
+
+
+
 
     #pot label
-    label_pot.append(Label(f"Pot: 0", 40, Color.RED, (430, 370)))
     total_pot = 0
     for pot in game.pot:
         total_pot += pot
-    label_pot[0].text = f'Pot: {total_pot}'
-    #label_pot[0].visible = total_pot > 0 #toggle visibility
+    label_pot.append(Label(f"Pot: 0", 40, Color.RED, (385, 352), visible=total_pot>0))
+    label_pot[0].text = f'{total_pot}'
     label_pot[0].draw(game.screen)
+    bet_chips.append(Chip((350, 350), visible=label_pot[0].visible))
+    bet_chips[-1].change_size(.4)
+    bet_chips.append(Chip((460, 350), visible=label_pot[0].visible))
+    bet_chips[-1].change_size(.4)
+    for chip in bet_chips: chip.draw(game.screen)
 
     label_current_player_turn.append(Label(f'{game.current_player}\'s turn', 40, Color.BLACK, (5, 40)))
     label_current_player_turn[0].draw(game.screen)
@@ -347,33 +394,39 @@ def create_labels(game):
     label_fold = []
     #print("Players in seats ->", game.seat)
     #print(f"[{game.seat[0].fold},{game.seat[1].fold},{game.seat[2].fold}]")
-    label_fold.append(Label('FOLD', 60, Color.BLACK, (5+10,200+30), visible = game.seat[0].fold))
+    label_fold.append(Label('FOLD', 60, Color.BLACK, (350, 445+20), visible = game.seat[0].fold))
     label_fold[0].rotate(20)
-
     label_fold[0].draw(game.screen)
 
-    label_fold.append(Label('FOLD', 60, Color.BLACK, (405+10,585+30), visible = game.seat[1].fold))
+    label_fold.append(Label('FOLD', 60, Color.BLACK, (15, 220+20), visible = game.seat[1].fold))
     label_fold[1].rotate(20)
     label_fold[1].draw(game.screen)
 
-    label_fold.append(Label('FOLD', 60, Color.BLACK, (840+10,200+30), visible = game.seat[2].fold))
+    label_fold.append(Label('FOLD', 60, Color.BLACK, (350, 15+20), visible = game.seat[2].fold))
     label_fold[2].rotate(20)
     label_fold[2].draw(game.screen)
 
-    #print(f'{label_fold[0].visible},{label_fold[1].visible},{label_fold[2].visible}')
+    label_fold.append(Label('FOLD', 60, Color.BLACK, (675, 220+20), visible = game.seat[3].fold))
+    label_fold[3].rotate(20)
+    label_fold[3].draw(game.screen)
+
     #all in lables
     label_player_all_in = []
-    label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (5+10,200+30), visible = game.seat[0].all_in))
+    label_player_all_in.append(Label('ALL IN', 50, Color.BLACK, (350, 445+20), visible = game.seat[0].all_in))
     label_player_all_in[0].rotate(20)
     label_player_all_in[0].draw(game.screen)
 
-    label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (405+10,585+30), visible = game.seat[1].all_in))
+    label_player_all_in.append(Label('ALL IN', 50, Color.BLACK, (15, 220+20), visible = game.seat[1].all_in))
     label_player_all_in[1].rotate(20)
     label_player_all_in[1].draw(game.screen)
 
-    label_player_all_in.append(Label('ALL IN', 60, Color.BLACK, (840+10,200+30), visible = game.seat[2].all_in))
+    label_player_all_in.append(Label('ALL IN', 50, Color.BLACK, (350, 15+20), visible = game.seat[2].all_in))
     label_player_all_in[2].rotate(20)
     label_player_all_in[2].draw(game.screen)
+
+    label_player_all_in.append(Label('ALL IN', 50, Color.BLACK, (350, 15+20), visible = game.seat[2].all_in))
+    label_player_all_in[3].rotate(20)
+    label_player_all_in[3].draw(game.screen)
 
 
 
@@ -390,7 +443,7 @@ def update_labels(game):
     """
     #reset all labels used in the game
     #erase label text by redrawing
-    for label in labels_chip_count + labels_player_bet + label_pot + label_dealer + label_current_player_turn + label_player_hands:
+    for label in labels_chip_count + labels_player_bet + label_pot + label_dealer + label_current_player_turn + label_player_hands + bet_chips:
         new = pygame.Surface(label.rect.size)
         new.fill(Color.GREEN.value)
         game.screen.blit(new, label.rect.topleft)
@@ -625,15 +678,27 @@ class Label:
         self.rect = self.surface.get_rect(topleft=self._position)
 
 class Chip:
-    def __init__(self, position):
+    def __init__(self, position, visible=True):
         self.image_path = "Images/chipBlackWhite_border.png"
         self.original_image = pygame.image.load(self.image_path)
         self.image = self.original_image
         self.rect = self.image.get_rect(topleft=position)
+        self._visible = visible
 
+    @property
+    def visible(self):
+        return self._visible
+    @visible.setter
+    def visible(self, value):
+        if isinstance(value, bool):
+            if value:
+                self._visible = value
+        else:
+            raise ValueError("Visibility must be a boolean")
     def draw(self, screen):
         #draws the chip onto the screen
-        screen.blit(self.image, self.rect.topleft)
+        if self._visible:
+            screen.blit(self.image, self.rect.topleft)
 
     def change_size(self, scale_factor):
         #changes the size of the chip image
@@ -641,3 +706,7 @@ class Chip:
         new_height = int(self.original_image.get_height() * scale_factor)
         self.image = pygame.transform.scale(self.original_image, (new_width, new_height))
         self.rect = self.image.get_rect(topleft=self.rect.topleft)
+    def remove(self, screen):
+        new = pygame.Surface(self.rect.size)
+        new.fill(Color.GREEN.value)
+        screen.blit(new, self.rect.topleft)

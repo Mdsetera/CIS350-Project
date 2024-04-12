@@ -15,7 +15,7 @@ def main():
     :return:
     """
     #Initialize game instance
-    game = Game(num_User_players=3, num_AI_players=0)
+    game = Game(num_User_players=4, num_AI_players=0)
     screen, clock = gui.init_pygame()
     screen.fill((0, 128, 0))
     gui.create_buttons(game)
@@ -159,8 +159,8 @@ def get_player_input(game: Game, player: Player) -> (str,int):
     gui.enable_buttons(game, player)
     input_received = False
     betslider = None
-    submit_button = gui.Button(700, 460, 80, 30, "Submit Bet", 20, True, visible=False)
-    cancel_button = gui.Button(800, 460, 80, 30, "Cancel", 20, True, visible=False)
+    submit_button = gui.Button(630, 590, 80, 30, "Submit Bet", 20, True, visible=False)
+    cancel_button = gui.Button(720, 590, 80, 30, "Cancel", 20, True, visible=False)
     #creating event to track timer
     TIMEREVENT = pygame.USEREVENT + 1
     #create_timer
@@ -193,7 +193,7 @@ def get_player_input(game: Game, player: Player) -> (str,int):
                 elif num_time_passed >= 3 and player.all_in:
                     return ('check', 0)
 
-        timer_positions = [(250,465),(140,255),(470,50),(640,255)]
+        timer_positions = [(250,465),(140,255),(470,50),(625,255)]
         pos = timer_positions[game.seat.index(player)]
         #create rect to clear the timer space before incrementing countdown to prevent overlapping
         timer_rect = pygame.Rect(pos[0], pos[1],50, 50)
@@ -219,7 +219,7 @@ def get_player_input(game: Game, player: Player) -> (str,int):
                     return ('call', 0)
                 elif button.text == 'Bet' and button.enabled:
                     range = player.get_bet_range(game)
-                    betslider = gui.Slider(700, 500, 200, 20, range[0], range[1], 10, visible=True)
+                    betslider = gui.Slider(600, 580, 200, 20, range[0], range[1], 10, visible=True)
 
         if betslider:
             betslider.draw(game.screen)
