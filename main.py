@@ -15,7 +15,7 @@ def main():
     :return:
     """
     #Initialize game instance
-    game = Game(num_User_players=4, num_AI_players=0)
+    game = Game(num_User_players=2)
     screen, clock = gui.init_pygame()
     screen.fill((0, 128, 0))
     gui.create_buttons(game)

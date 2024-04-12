@@ -26,7 +26,7 @@ class Suit(Enum):
     CLUBS = 4
 
 class Game:
-    def __init__(self, num_User_players = 3, num_AI_players = 0):
+    def __init__(self, num_User_players = 3):
         self.deck = Deck()
         self.table_cards = []
         self.seat = []
@@ -41,9 +41,11 @@ class Game:
         self.dealer_seat = 0
         self.screen, self.clock = gui.init_pygame()
 
+
         for x in range(num_User_players):#add user players
             self.seat.append(UserPlayer())
-        for x in range(num_AI_players):#add AI players
+        self.num_AI_players = 4 - num_User_players
+        for x in range(self.num_AI_players):#add AI players
             self.seat.append(AIPlayer())
         for player in self.seat:
             player.seat_number = self.seat.index(player)
@@ -208,7 +210,22 @@ class Game:
         for player in self.active_players:
             if player.bet > 0: raise ValueError(f"{player}'s bet: {player.bet}(should be zero)")
         print('pot updated')
+    def previous_player(self, current_player):
+        """
+        receives a player and returns the player who will take their turn next
+        :param current_player:
+        :return:
+        """
+        #returns the player whos turn is next
+        previous_player = None
+        index = self.active_players.index(current_player)
 
+        if self.active_players[0] == self.active_players[index]:
+            previous_player = self.active_players[-1]
+        else:
+            previous_player = self.active_players[index - 1]
+        print("(previous player)", previous_player, "<-", current_player)
+        return previous_player
     def next_player(self, current_player):
         """
         receives a player and returns the player who will take their turn next
@@ -223,7 +240,7 @@ class Game:
             next_player = self.active_players[0]
         else:
             next_player = self.active_players[index + 1]
-        print("player", current_player, "->", next_player)
+        print(current_player, "->", next_player,"(next_player)")
         return next_player
     def equal_bets(self):
         #sent a list of players, returns True if all bets are equal to the highest bet
@@ -411,7 +428,7 @@ class Player:
         self.all_in = False
         self.seat_number = -1
         self.fold = False
-
+        self.last_turn = None
     def __str__(self):
         return f'Player {self.seat_number}'
     def __repr__(self):
@@ -432,8 +449,11 @@ class Player:
         """
         Will control each turn that the player takes
         player input = {"fold":_fold, "check":_call, "call":_call, "bet":_bet}
+
+        input:(function_name, amount)
         """
         move = {"fold":self._fold, "check":self._check, "call":self._call, "bet":self._bet}
+        game.current_player.last_turn = input
         game.current_player = game.next_player(game.current_player)#switches player before they make a move because fold removes them from active players
         if not self.all_in:
             if input[0].lower() == 'bet':
@@ -581,13 +601,57 @@ class UserPlayer(Player):
 class AIPlayer(Player):
     def __init__(self):
         super().__init__()
-    def _play(self, game)->bool:
+    def _play(self, game, input = ('fold', 0)):
         """
         will control the turn of a AI player
         """
-        input = ("fold",0)
-        super()._play(game, input)
-        return False
+
+
+
+        num_strategies = 3 #when creating a new strategy, this number must be incremented manually
+
+
+        strategy_num = random.randint(0, num_strategies-1)
+        input = ("fold",0)#FIXME: generate AI
+        #FIXME code mutiple strategies, have every round be a random strategy
+        rank, self.hand = self.get_hand_rank()
+        moves = self.get_moves(game)
+        input_found = False
+        while (input_found == False):
+            #bet rounds start at 1, every round, and increments 1 everytime a new round-of-bets starts
+
+            #strategy 0 - logic standard strategy
+            if strategy_num == 0:
+                pass
+
+            #strategy 1 - going shot for shot
+            elif strategy_num == 1:
+                last_turn = game.previous_player(self).last_turn #last turn of the previous player
+                if moves['check'] == True:#if bot can check it will
+                    input = ('check', 0)
+                    break
+                elif moves['call'] == True:#then if it can call it will
+                    input = ('call', 0)
+                    break
+
+            #strategy 2 - bluffing with random bets
+            elif strategy_num == 2: #FIXME in future add confidence levels
+                if moves['bet'] == True:
+                    range = self.get_bet_range(game)
+                    random_bet = random.randint(range[0], range[1])
+                    input = ('bet', random_bet)
+                    break
+                elif moves['call'] == True:
+                    input = ('call', 0)
+                    break
+
+
+            input = ('fold', 0)
+            input_found = True
+
+        #################
+            super()._play(game, input)
+
 '''
 def main():
     deck = Deck()
