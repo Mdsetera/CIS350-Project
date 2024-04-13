@@ -9,7 +9,7 @@ def get_hand_rank_string(cards:[Card]) -> str:
     """
     rank, cards = get_hand_rank(cards)
     hands = ['Royal Flush', 'StraightFlush', 'FourOfAKind', 'FullHouse', 'Flush']
-    hands.extend(['Straight', 'ThreeOfAKind', 'ThreeOfAKind', 'TwoPair', 'Pair', 'High'])
+    hands.extend(['Straight', 'ThreeOfAKind', 'TwoPair', 'Pair', 'High'])
     num = ''
     if hands[rank] == 'Pair' or hands[rank] == 'High':
         if cards[0].value == 11: num = 'J'
@@ -27,8 +27,7 @@ def get_hand_rank(cards:[Card])->(int, [Card]):
     :param cards: list of cards in the hand
     :return: (rank, new_cards)
     """
-    #['Royal Flush-0', 'StraightFlush-1', 'FourOfAKind-2', 'FullHouse-3', 'Flush-4']
-    #['Straight-5', 'ThreeOfAKind-6', 'ThreeOfAKind-6', 'TwoPair-6', 'Pair-6', 'High-10'])
+
     if cards == None: raise ValueError('must send in an amount of cards')
     global value_array, suit_value_array
     value_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]

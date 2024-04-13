@@ -284,6 +284,8 @@ class Game:
                 player.chips += self.pot[x] / len(eligibility[x])
                 self.pot[x] -= self.pot[x] / len(eligibility[x])
         for player in self.seat:
+            if isinstance(player, AIPlayer):
+                self.strategy_num = -1
             print(f'{player.__str__()} chips: {player.chips}', end=" ")
         #reset all game values and player values
         self.pot = [0]
@@ -601,17 +603,21 @@ class UserPlayer(Player):
 class AIPlayer(Player):
     def __init__(self):
         super().__init__()
+        self.strategy_num = -1
     def _play(self, game, input = ('fold', 0)):
         """
         will control the turn of a AI player
         """
 
+        #['Royal Flush-0', 'StraightFlush-1', 'FourOfAKind-2', 'FullHouse-3', 'Flush-4']
+        #['Straight-5', 'ThreeOfAKind-6', 'TwoPair-7', 'Pair-8', 'High-9'])
+
+        num_strategies = 4 #when creating a new strategy, this number must be incremented manually
 
 
-        num_strategies = 3 #when creating a new strategy, this number must be incremented manually
 
-
-        strategy_num = random.randint(0, num_strategies-1)
+        if self.strategy_num == -1:
+            strategy_num = random.randint(0, num_strategies-1)
         input = ("fold",0)#FIXME: generate AI
         #FIXME code mutiple strategies, have every round be a random strategy
         rank, self.hand = self.get_hand_rank()
@@ -620,13 +626,36 @@ class AIPlayer(Player):
         while (input_found == False):
             #bet rounds start at 1, every round, and increments 1 everytime a new round-of-bets starts
 
-            #strategy 0 - logic standard strategy
-            if strategy_num == 0:
-                pass
+            #strategy 0 - conservative
+            if self.strategy_num == 0:
+                last_turn = game.previous_player(self).last_turn #last turn of the previous player
+                if rank == 9 and game.bet_round > 1:
+                    if self.hand[0].value >= 12:
+                        input = ('call', 0)
+                        break
+                    else:
+                        input = ('fold', 0)
+                        break
+                elif rank == 8: #pair
+                    if last_turn[0] == 'bet':
+                        if last_turn[1] > self.bet + (self.chips * 100) // 20:
+                            input = ('fold', 0)
+                            break
+                        else:
+                            input = ('call', 0)
+                    elif last_turn[0] == 'call':
+                        if game.highest_bet > self.bet + (self.chips * 100) // 20:
+                            input = ('fold', 0)
+                            break
+                        else:
+                            input = ('call', 0)
+                elif game.highest_bet > self.bet + (self.chips * 100) // 20:
+                    input = ('fold')
+                    break
+
 
             #strategy 1 - going shot for shot
-            elif strategy_num == 1:
-                last_turn = game.previous_player(self).last_turn #last turn of the previous player
+            elif self.strategy_num == 1:
                 if moves['check'] == True:#if bot can check it will
                     input = ('check', 0)
                     break
@@ -635,7 +664,7 @@ class AIPlayer(Player):
                     break
 
             #strategy 2 - bluffing with random bets
-            elif strategy_num == 2: #FIXME in future add confidence levels
+            elif self.strategy_num == 2: #FIXME in future add confidence levels
                 if moves['bet'] == True:
                     range = self.get_bet_range(game)
                     random_bet = random.randint(range[0], range[1])
@@ -644,6 +673,18 @@ class AIPlayer(Player):
                 elif moves['call'] == True:
                     input = ('call', 0)
                     break
+
+             #strategy 3 - check raise
+            elif self.strategy_num == 3: #check raise
+                if moves['check'] == True:
+                    input = ('check', 0)
+                    break
+                elif moves['bet'] == True:
+                    range = self.get_bet_range(game)
+                    input = ('bet', (range[1] + range[0])//2)
+                    break
+
+
 
 
             input = ('fold', 0)
