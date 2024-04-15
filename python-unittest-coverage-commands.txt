@@ -1,0 +1,64 @@
+unittest -- Python's built-in unit testing framework
+****************************************************
+
+https://docs.python.org/3/library/unittest.html
+
+To run unit tests in a python module(s), use can any of the these command:
+
+Note that running unit tests this way will not measure and provide code coverage
+results (nothing wrong with it).
+
+python -m unittest -v testmodulename
+
+python -m unittest -v testmodulename1 testmodulename2
+
+python -m unittest -v testmodulename.py
+
+python -m unittest -v testmodulename1.py testmodulename2.py
+
+
+Coverage.py - tool for measuring code coverage of Python programs
+*****************************************************************
+
+https://coverage.readthedocs.io/en/7.4.1/
+
+You can install the coverage tool using the following command:
+
+$ python3 -m pip install coverage
+
+or
+
+$ python -m pip install coverage
+
+No matter of what IDE you use for development, use the integrated command terminal/window
+in your IDE for running the commands below.
+
+Inside the command terminal/window, make sure you are in the right folder/directory
+containing the python files.
+
+For each test file/module you want to run, use the following command to measure line
+as well as branch coverage. This command places (or adds) the coverage data to .coverage
+file that you will find in the project folder.
+
+$ coverage run --branch -a -m unittest -v testfilename  (without .py extension)
+
+To measure code coverage by running the application for manual functional testing,
+use the following command. The "filename" refers to the name of the Python file
+that starts your program.
+
+$ coverage run --branch -a -m filename
+
+To generate textual summary of coverage results, use the following command:
+
+$ coverage report -m        
+
+If you want to generate HTML report of coverage results, use the following command.
+Running this command creates a folder named "htmlcov" in your project folder.
+Open the index.html file to view the results.
+
+$ coverage html             
+
+The report for each module exercised is decorated to show the status of each line.
+Lines are highlighted: green for executed, red for missing, and gray for excluded.
+If you’ve used branch coverage, partial branches are yellow.
+The colored counts at the top of the file are buttons to turn on and off the highlighting.
