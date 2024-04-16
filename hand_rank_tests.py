@@ -36,7 +36,7 @@ def get_hand_rank(cards:[Card])->(int, [Card]):
         value_array[c.value] += 1
         suit_value_array[c.suit.value] += 1
     checks = [check_RoyalFlush, check_StraightFlush, check_FourOfAKind, check_FullHouse, check_Flush]
-    checks.extend([check_Straight, check_ThreeOfAKind, check_ThreeOfAKind, check_TwoPair, check_Pair, check_HighCard])
+    checks.extend([check_Straight, check_ThreeOfAKind, check_TwoPair, check_Pair, check_HighCard])
     #print(value_array)
     for rank,check in enumerate(checks):
         rank_found, new_cards = check(cards)

@@ -284,7 +284,7 @@ class Game:
                 player.chips += self.pot[x] / len(eligibility[x])
                 self.pot[x] -= self.pot[x] / len(eligibility[x])
         for player in self.seat:
-            if isinstance(player, AIPlayer):
+            if isinstance(player, type(AIPlayer())):
                 self.strategy_num = -1
             print(f'{player.__str__()} chips: {player.chips}', end=" ")
         #reset all game values and player values
@@ -422,7 +422,7 @@ class Card:
 class Player:
     def __init__(self):
         self.hand = []
-        self.chips = 1000
+        self.chips = 100
         self.hand_rank = None
         self.bet = 0
         self.pot_eligibility = 0
@@ -455,7 +455,7 @@ class Player:
         input:(function_name, amount)
         """
         move = {"fold":self._fold, "check":self._check, "call":self._call, "bet":self._bet}
-        game.current_player.last_turn = input
+        if not self.all_in: self.last_turn = input
         game.current_player = game.next_player(game.current_player)#switches player before they make a move because fold removes them from active players
         if not self.all_in:
             if input[0].lower() == 'bet':
@@ -614,85 +614,64 @@ class AIPlayer(Player):
 
         num_strategies = 4 #when creating a new strategy, this number must be incremented manually
 
-
-
         if self.strategy_num == -1:
-            strategy_num = random.randint(0, num_strategies-1)
-        input = ("fold",0)#FIXME: generate AI
-        #FIXME code mutiple strategies, have every round be a random strategy
+            self.strategy_num = random.randint(0, num_strategies-1)
+        input = self.get_strategy(game)
+        super()._play(game, input)
+    def get_strategy(self, game) -> (str,int):
         rank, self.hand = self.get_hand_rank()
         moves = self.get_moves(game)
-        input_found = False
-        while (input_found == False):
-            #bet rounds start at 1, every round, and increments 1 everytime a new round-of-bets starts
-
-            #strategy 0 - conservative
-            if self.strategy_num == 0:
-                last_turn = game.previous_player(self).last_turn #last turn of the previous player
-                if rank == 9 and game.bet_round > 1:
-                    if self.hand[0].value >= 12:
-                        input = ('call', 0)
-                        break
+        #bet rounds start at 1, every round, and increments 1 everytime a new round-of-bets starts
+        if self.strategy_num == -1: return ('fold', 0)
+        #strategy 0 - conservative
+        if self.strategy_num == 0:
+            last_turn = game.previous_player(self).last_turn #last turn of the previous player
+            if rank == 9 and game.bet_round > 1:
+                if self.hand[0].value >= 12:
+                    return ('call', 0)
+                else:
+                    return ('fold', 0)
+            elif rank == 8: #pair
+                if last_turn[0] == 'bet':
+                    if last_turn[1] > self.bet + (self.chips * 100) // 20:
+                        return ('fold', 0)
                     else:
-                        input = ('fold', 0)
-                        break
-                elif rank == 8: #pair
-                    if last_turn[0] == 'bet':
-                        if last_turn[1] > self.bet + (self.chips * 100) // 20:
-                            input = ('fold', 0)
-                            break
-                        else:
-                            input = ('call', 0)
-                    elif last_turn[0] == 'call':
-                        if game.highest_bet > self.bet + (self.chips * 100) // 20:
-                            input = ('fold', 0)
-                            break
-                        else:
-                            input = ('call', 0)
-                elif game.highest_bet > self.bet + (self.chips * 100) // 20:
-                    input = ('fold')
-                    break
+                        return ('call', 0)
+                elif last_turn[0] == 'call':
+                    if game.highest_bet > self.bet + (self.chips * 100) // 20:
+                        return ('fold', 0)
+                    else:
+                        return ('call', 0)
+            elif game.highest_bet > self.bet + (self.chips * 100) // 20:
+                return ('fold')
 
+        #strategy 1 - going shot for shot
+        elif self.strategy_num == 1:
+            if moves['check'] == True:#if bot can check it will
+                return ('check', 0)
+            elif moves['call'] == True:#then if it can call it will
+                return ('call', 0)
 
-            #strategy 1 - going shot for shot
-            elif self.strategy_num == 1:
-                if moves['check'] == True:#if bot can check it will
-                    input = ('check', 0)
-                    break
-                elif moves['call'] == True:#then if it can call it will
-                    input = ('call', 0)
-                    break
+        #strategy 2 - bluffing with random bets
+        elif self.strategy_num == 2: #FIXME in future add confidence levels
+            if moves['bet'] == True:
+                range = self.get_bet_range(game)
+                random_bet = random.randint(range[0], range[1])
+                return ('bet', random_bet)
 
-            #strategy 2 - bluffing with random bets
-            elif self.strategy_num == 2: #FIXME in future add confidence levels
-                if moves['bet'] == True:
-                    range = self.get_bet_range(game)
-                    random_bet = random.randint(range[0], range[1])
-                    input = ('bet', random_bet)
-                    break
-                elif moves['call'] == True:
-                    input = ('call', 0)
-                    break
+            elif moves['call'] == True:
+                return ('call', 0)
 
-             #strategy 3 - check raise
-            elif self.strategy_num == 3: #check raise
-                if moves['check'] == True:
-                    input = ('check', 0)
-                    break
-                elif moves['bet'] == True:
-                    range = self.get_bet_range(game)
-                    input = ('bet', (range[1] + range[0])//2)
-                    break
-
-
-
-
-            input = ('fold', 0)
-            input_found = True
-
-        #################
-            super()._play(game, input)
-
+        #strategy 3 - check raise
+        elif self.strategy_num == 3: #check raise
+            if moves['check'] == True:
+                return ('check', 0)
+            elif moves['bet'] == True:
+                range = self.get_bet_range(game)
+                return ('bet', (range[1] + range[0])//2)
+        else:
+            print('not detecting strategy')
+            return ('fold', 0)
 '''
 def main():
     deck = Deck()

@@ -14,11 +14,12 @@ import unittest
 class TestMainFunctions(unittest.TestCase):
     def test_take_bets(self):
         # Create a mock game instance
-        game = Game(num_User_players=3, num_AI_players=0)
-        player1 = UserPlayer()
+        game = Game(num_User_players=4)
+        player0 = UserPlayer()
+        player1 = Player()
         player2 = Player()
         player3 = Player()
-        game.active_players = [player1, player2, player3]
+        game.active_players = [player0, player1, player2, player3]
 
         # Mock the input for each player's turn
         with patch('builtins.input', side_effect=['call', 'fold']):
@@ -29,7 +30,7 @@ class TestMainFunctions(unittest.TestCase):
 
     def test_get_player_input(self):
         # Create a mock game instance and player
-        game = Game(num_User_players=3, num_AI_players=0)
+        game = Game(num_User_players=4)
         player = UserPlayer()
 
         # Mock the input for the player's turn
@@ -123,6 +124,13 @@ class TestPlayer:
         player.chips = 500
         moves = player.get_moves(game)
         assert moves == {"fold": True, "check": False, "call": True, "bet": True}
+        player.bet = 100
+        moves = player.get_moves(game)
+        assert moves == {"fold": True, "check": True, "call": False, "bet": True}
+        player.bet = 20
+        player.chips = 20
+        moves = player.get_moves(game)
+        assert moves == {"fold": True, "check": False, "call": True, "bet": False}
 
     #  Player can call
     def test_player_call(self):
