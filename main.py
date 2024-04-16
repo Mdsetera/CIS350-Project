@@ -1,3 +1,5 @@
+import copy
+import random
 import pygame
 import poker_gui as gui
 from start_screen import start_screen
@@ -131,7 +133,7 @@ def take_bets(game:Game):
     while not (game.equal_bets() and not turn_not_taken) and len(game.active_players) > 1:
 
         player = game.current_player
-        if type(player) is type(UsePlayer()):
+        if type(player) is type(UserPlayer()):
             player._play(game, get_player_input(game, player))
         else:
             #FIXME implement a small timer for the computer turns
@@ -282,5 +284,9 @@ def print_winners(winners):
     #winner_label = Label()
 
 if __name__ == '__main__':
-    start_screen()
-    main()
+    if start_screen() == 0:
+        main()
+    else:
+        main()#FIXME delete when blackjack mode is complete
+        #blackjack()
+

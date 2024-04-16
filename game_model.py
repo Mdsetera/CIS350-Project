@@ -40,7 +40,7 @@ class Game:
         self.bet_round = 0
         self.dealer_seat = 0
         self.screen, self.clock = gui.init_pygame()
-
+        self.total_game_chips = 0
 
         for x in range(num_User_players):#add user players
             self.seat.append(UserPlayer())
@@ -49,6 +49,7 @@ class Game:
             self.seat.append(AIPlayer())
         for player in self.seat:
             player.seat_number = self.seat.index(player)
+            self.total_game_chips += player.chips
 
         ##everyone is now seated at the table
 
@@ -61,14 +62,6 @@ class Game:
         self.screen = screen
         self.active_players = [player for player in self.seat if player.chips > 0]
 
-        #self.take_first_round_bets()
-        #self.update_pot()
-        # if self.round == 1:
-        #     self.take_bets(gui.show_flop, 3)
-        #elif self.round == 2:
-            #self.take_bets(gui.show_turn, 1)
-        #elif self.round == 3:
-            #self.take_bets(gui.show_river, 1)
 
     def deal_initial_cards(self):
         """
@@ -79,7 +72,7 @@ class Game:
         """
         print('deal_initial_cards')
         if not self.table_cards:
-            for player in self.active_players:
+            for player in self.seat:
                 for x in range(2):
                     if not self.deck.stack:
                         self.deck.populate()
@@ -224,7 +217,7 @@ class Game:
             previous_player = self.active_players[-1]
         else:
             previous_player = self.active_players[index - 1]
-        print("(previous player)", previous_player, "<-", current_player)
+        #print("(previous player)", previous_player, "<-", current_player)
         return previous_player
     def next_player(self, current_player):
         """
@@ -278,11 +271,11 @@ class Game:
                 if player.pot_eligibility == x: eligibility[x].append(player)
             for player in winners:
                 if player in eligibility[x]:
-                    player.chips += self.pot[x] / len(winners)
-                self.pot[x] -= self.pot[x] / len(winners)
+                    player.chips += self.pot[x] // len(winners)
+                self.pot[x] -= self.pot[x] // len(winners)
             for player in eligibility[x]:
-                player.chips += self.pot[x] / len(eligibility[x])
-                self.pot[x] -= self.pot[x] / len(eligibility[x])
+                player.chips += self.pot[x] // len(eligibility[x])
+                self.pot[x] -= self.pot[x] // len(eligibility[x])
         for player in self.seat:
             if isinstance(player, type(AIPlayer())):
                 self.strategy_num = -1
@@ -291,6 +284,7 @@ class Game:
         self.pot = [0]
         self.active_players = []
         self.round += 1
+
         self.bet_round = 0
         ##FIXME increase blinds when applicable
         self.dealer_seat += 1
@@ -298,10 +292,13 @@ class Game:
         self.highest_bet = 0
         self.table_cards = []
         self.deck = Deck()
+        total_table_chips = 0
         for player in self.seat:
             player.hand = []
             player.bet = 0
             player.fold = False
+            total_table_chips += player.chips
+        if total_table_chips != self.total_game_chips: raise ValueError(f'Round: {self.round}, pot was not awarded correctly')
     @property
     def dealer_seat(self):
         return self._dealer_seat
@@ -443,8 +440,6 @@ class Player:
     def chips(self, num):
         if num < 0:
             raise ValueError('chip count cannot be < 0')
-        elif num % 5 != 0:
-            raise ValueError('chip count must be a multiple of 5')
         else:
             self._chips = num
     def _play(self, game:Game, input) -> bool :
@@ -526,7 +521,6 @@ class Player:
         highest_chip_count = 0
         second_highest_chip_count = 0
         for player in game.active_players:
-
             if player.chips + player.bet >= highest_chip_count:
                 second_highest_chip_count = highest_chip_count
                 highest_chip_count = player.chips + player.bet
@@ -617,7 +611,7 @@ class AIPlayer(Player):
         if self.strategy_num == -1:
             self.strategy_num = random.randint(0, num_strategies-1)
         input = self.get_strategy(game)
-        super()._play(game, input)
+        super()._play(game, input)#AI player
     def get_strategy(self, game) -> (str,int):
         rank, self.hand = self.get_hand_rank()
         moves = self.get_moves(game)
@@ -642,8 +636,14 @@ class AIPlayer(Player):
                         return ('fold', 0)
                     else:
                         return ('call', 0)
-            elif game.highest_bet > self.bet + (self.chips * 100) // 20:
-                return ('fold')
+                elif last_turn[0] == 'check':
+                    if moves['check']: return ('check', 0)
+            elif game.highest_bet > self.bet + (self.chips * 100) // 50:
+                return ('fold',0)
+            elif rank < 8:
+                if moves['call']: return ('call', 0)
+            else:
+                return ('fold', 0)
 
         #strategy 1 - going shot for shot
         elif self.strategy_num == 1:
@@ -651,27 +651,34 @@ class AIPlayer(Player):
                 return ('check', 0)
             elif moves['call'] == True:#then if it can call it will
                 return ('call', 0)
+            else:
+                return ('fold', 0)
 
         #strategy 2 - bluffing with random bets
-        elif self.strategy_num == 2: #FIXME in future add confidence levels
+        elif self.strategy_num == 2:
             if moves['bet'] == True:
                 range = self.get_bet_range(game)
                 random_bet = random.randint(range[0], range[1])
                 return ('bet', random_bet)
-
             elif moves['call'] == True:
                 return ('call', 0)
-
+            elif moves['check'] == True:  # if bot can check it will
+                return ('check', 0)
+            else:
+                return ('fold', 0)
         #strategy 3 - check raise
         elif self.strategy_num == 3: #check raise
             if moves['check'] == True:
                 return ('check', 0)
-            elif moves['bet'] == True:
+            elif moves['bet'] is True and self.last_turn != None and self.last_turn[0] != 'bet':
                 range = self.get_bet_range(game)
                 return ('bet', (range[1] + range[0])//2)
+            elif moves['call'] == True: return ('call', 0)
+            else:
+                return ('fold', 0)
         else:
-            print('not detecting strategy')
-            return ('fold', 0)
+            raise ValueError(f'invalid strategy_num')
+        raise ValueError(f'Strategy {self.strategy_num} not working')
 '''
 def main():
     deck = Deck()
