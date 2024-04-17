@@ -129,15 +129,21 @@ def take_bets(game:Game):
     game.update_highest_bet()
     turn_not_taken = []
     everyone_took_turn = False
+    game.active_players = [player for player in game.seat if (player.chips > 0 and not player.fold)]
+    print(f'Round {game.round} active players -> {game.active_players}')
     for player in game.active_players: turn_not_taken.append(player)
     while not (game.equal_bets() and not turn_not_taken) and len(game.active_players) > 1:
-
         player = game.current_player
-        if type(player) is type(UserPlayer()):
-            player._play(game, get_player_input(game, player))
+        if isinstance(player, UserPlayer):
+            game.current_player = game.next_player(player) # switches player before they make a move
+            print(f'{player}\'s turn')                                                            # because fold removes them from active players
+            player._play(game, get_player_input(game, player)) #Userplayer
         else:
             #FIXME implement a small timer for the computer turns
-            player._play(game)
+            print(f'{player}\'s turn')
+            delay(2) #in seconds
+            game.current_player = game.next_player(player)
+            player._play(game) #AI player
         if player in turn_not_taken: turn_not_taken.remove(player)
         print(f'turn not taken -> {turn_not_taken}')
         gui.update_labels(game)
@@ -154,8 +160,7 @@ def get_player_input(game: Game, player: Player) -> (str,int):
     :return: (move, amount)
     """
     #gets current player
-    #return (move, bet_amount) ex. ('bet', 50)
-    print('getting input from player', player.seat_number)
+    print('getting input from player', player)
     gui.enable_buttons(game, player)
     input_received = False
     betslider = None
@@ -210,12 +215,15 @@ def get_player_input(game: Game, player: Player) -> (str,int):
             if button.check_click(mouse_pos, events):
                 if button.text == "Fold" and button.enabled:
                     game.screen.fill((0, 128, 0), timer_rect)
+                    if betslider:betslider.remove(game.screen)
                     return ('fold', 0)
                 elif button.text == "Check" and button.enabled:
                     game.screen.fill((0, 128, 0), timer_rect)
+                    if betslider:betslider.remove(game.screen)
                     return ('check', 0)
                 elif button.text == 'Call' and button.enabled:
                     game.screen.fill((0, 128, 0), timer_rect)
+                    if betslider:betslider.remove(game.screen)
                     return ('call', 0)
                 elif button.text == 'Bet' and button.enabled:
                     range = player.get_bet_range(game)
@@ -275,9 +283,20 @@ def get_player_input(game: Game, player: Player) -> (str,int):
 
 
     pygame.time.set_timer(TIMEREVENT, 0)
-    #raise ValueError('no input received')
+    raise ValueError('no input received')
     return ('fold', 0)
 
+def delay(seconds:int):
+    # creating event to track timer
+    TIMEREVENT = pygame.USEREVENT + 2
+    # create_timer
+    pygame.time.set_timer(TIMEREVENT, 1000)
+    while seconds > 0:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == TIMEREVENT:
+                seconds -= 1
+    pass
 def print_winners(winners):
     for p in winners:
         print(p, 'takes the hand')

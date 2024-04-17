@@ -587,6 +587,24 @@ class Slider:
         #moves the slider pointer as the user draggs it
         self.pointer_rect.centerx = mouse_pos[0]
 
+    def remove(self, screen):
+        """
+        fills the button surface with the color green
+        :param screen:
+        :return:
+        """
+        new = pygame.Surface((self.width, self.height))
+        new.fill(Color.GREEN.value)
+        screen.blit(new, (self.x, self.y))
+
+        new = pygame.Surface(self.slider_rect.size)
+        new.fill(Color.GREEN.value)
+        screen.blit(new, self.slider_rect.topleft)
+
+        new = pygame.Surface(self.pointer_rect.size)
+        new.fill(Color.GREEN.value)
+        screen.blit(new, self.pointer_rect.topleft)
+
 
 class Label:
     def __init__(self, text, font_size, color, position, visible=True):

@@ -101,8 +101,8 @@ class Game:
         :return:
         """
         player_turn = self.dealer_seat + 1 if self.dealer_seat + 1 < len(self.seat) else 0
-        self.current_player = self.seat[player_turn]
-        if self.current_player in self.active_players:
+        if self.seat[player_turn] in self.active_players:
+            self.current_player = self.seat[player_turn]
             if self.current_player.bet != 0: raise ValueError('player.bet should be zero')
             if len(self.active_players) == 2:
                 self.handle_big_blind(self.current_player)
@@ -112,6 +112,8 @@ class Game:
                 self.current_player = self.next_player(self.current_player)
                 self.handle_big_blind(self.current_player)
                 self.current_player = self.next_player(self.current_player)
+        else:
+            player_turn = player_turn + 1 if player_turn + 1 < len(self.seat) else 0
         print('blinds taken')
 
     def handle_small_blind(self, current_player):
@@ -160,11 +162,7 @@ class Game:
         finds active player with the highest bet and updates game.highest_bet
         :return:
         """
-        big_bet = 0
-        for player in self.active_players:
-            if player.bet > big_bet:
-                big_bet = player.bet
-        self.highest_bet = big_bet
+        self.highest_bet = max([player.bet for player in self.active_players])
         print('highest bet ->', self.highest_bet)
 
     def update_pot(self):
@@ -297,8 +295,9 @@ class Game:
             player.hand = []
             player.bet = 0
             player.fold = False
+            if player.chips > 0: player.all_in = False
             total_table_chips += player.chips
-        if total_table_chips != self.total_game_chips: raise ValueError(f'Round: {self.round}, pot was not awarded correctly')
+        #if total_table_chips != self.total_game_chips: raise ValueError(f'Round: {self.round}, pot was not awarded correctly')
     @property
     def dealer_seat(self):
         return self._dealer_seat
@@ -450,19 +449,16 @@ class Player:
         input:(function_name, amount)
         """
         move = {"fold":self._fold, "check":self._check, "call":self._call, "bet":self._bet}
-        if not self.all_in: self.last_turn = input
-        game.current_player = game.next_player(game.current_player)#switches player before they make a move because fold removes them from active players
-        if not self.all_in:
+        if not self.all_in and not self.fold: self.last_turn = input
+        if not self.all_in and not self.fold:
             if input[0].lower() == 'bet':
                 self._bet(game, input[1])
             else:
                 move[input[0].lower()](game)
-
-
         return False
     def _get_input(self, game:Game) ->str:
         print('super class is being called')
-        return 'fold'
+        return ('fold', 0)
     def get_moves(self, game:Game):
         """
         takes in game state
@@ -486,7 +482,7 @@ class Player:
             moves["call"] = True
 
         range = self.get_bet_range(game)
-        if (self.bet + self.chips) < range[0]:
+        if (self.chips) < range[0] or range[0] > range[1]:
             moves["bet"] = False
         else:
             moves["bet"] = True
@@ -502,7 +498,7 @@ class Player:
             raise ValueError('player cannot bet more than you have')
         elif amount < 0:
             raise ValueError('player cannot bet less than 0')
-        elif (self.bet + self.chips) < self.get_bet_range(game)[0]:#player cannot bet if they cannot match highest bet
+        elif (self.chips) < self.get_bet_range(game)[0]:#player cannot bet if they cannot match the minimum bet amount
             raise ValueError('player cannot meet minimum bet amount')
         else:
             self.bet += amount
@@ -517,26 +513,20 @@ class Player:
         :param game:
         :return: (min bet, max bet)
         """
-        highest_bet = 0
-        highest_chip_count = 0
-        second_highest_chip_count = 0
-        for player in game.active_players:
-            if player.chips + player.bet >= highest_chip_count:
-                second_highest_chip_count = highest_chip_count
-                highest_chip_count = player.chips + player.bet
-            elif player.chips + player.bet > second_highest_chip_count:
-                second_highest_chip_count = player.chips + player.bet
-            if player.bet > highest_bet: highest_bet = player.bet
-            game.highest_bet = highest_bet
-        max_bet = 0
-        if self.chips + self.bet == highest_chip_count:
-            max_bet = second_highest_chip_count
-        else:
-            max_bet = self.chips
+        bets = [player.bet for player in game.active_players]
+        #find each players total amount of chips, that being the bet + remaining chips. not including the current player (self)
+        total_chips = [player.bet + player.chips for player in game.active_players if not player is self]
+        highest_bet = max(bets)
 
-        min_bet = game.highest_bet + game.big_blind
+        # amount neded to match the highest bet
+        min_bet = (highest_bet - self.bet) + 1
+
+        # max_bet is calculated as the maximum of total chips among other players
+        # minus the current player's bet, or the remaining chips of the current player (self.chips), whichever is smaller.
+        max_bet = max(total_chips) - self.bet if max(total_chips) - self.bet < self.chips else self.chips
 
         return min_bet, max_bet
+
     def get_hand_rank(self) -> (int, [Card]):
         """
         resets player hand to new order
@@ -659,6 +649,7 @@ class AIPlayer(Player):
             if moves['bet'] == True:
                 range = self.get_bet_range(game)
                 random_bet = random.randint(range[0], range[1])
+                print(f'Chips: {self.chips} Bet: {self.bet} Bet-Range: {range} Trying to bet -> {random_bet}')
                 return ('bet', random_bet)
             elif moves['call'] == True:
                 return ('call', 0)
@@ -672,7 +663,9 @@ class AIPlayer(Player):
                 return ('check', 0)
             elif moves['bet'] is True and self.last_turn != None and self.last_turn[0] != 'bet':
                 range = self.get_bet_range(game)
-                return ('bet', (range[1] + range[0])//2)
+                bet_num = (range[1] + range[0])//2
+                print(f'Chips: {self.chips} Bet: {self.bet} Bet-Range: {range} Trying to bet -> {bet_num}')
+                return ('bet', bet_num)
             elif moves['call'] == True: return ('call', 0)
             else:
                 return ('fold', 0)

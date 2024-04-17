@@ -82,7 +82,6 @@ def check_FourOfAKind(cards:[Card])->(bool, [Card]):
 
 def check_FullHouse(cards:[Card])->(bool, [Card]):
     has_TOAK, cards = check_ThreeOfAKind(cards)
-    print(cards)
     if has_TOAK:
         new_cards = cards[0:3]
 
