@@ -44,30 +44,42 @@ def init_pygame():
 
 def show_flop(game, screen):
     """
-    draws the first three shared cards of the round on the screen
-    :param game:
-    :param screen:
-    :return:
+    Draws the first three shared cards of the round (the flop) on the screen and animates their movement.
+    :param game: The game state object containing information about the game.
+    :param screen: The Pygame screen object where the cards will be displayed.
     """
-    #print(game.table_cards)
-    #once first round of betting is over  (so like preflop)
-    flop_1 = game.table_cards[0]
-    flip_card1 = pygame.Rect(0, 0, flop_1.width, flop_1.height)
-    flip_card1.midbottom = (300, 325)
-    screen.blit(flop_1.front_image, flip_card1)
+    # Define the target positions for the flop cards
+    flop_positions = [(250, 225), (310, 225), (370, 225)]
 
-    flop_2 = game.table_cards[1]
-    flip_card2 = pygame.Rect(0, 0, flop_2.width, flop_2.height)
-    flip_card2.midbottom = (440-80, 325)
-    screen.blit(flop_2.front_image, flip_card2)
+    # Iterate through the first three flop cards
+    for index, card in enumerate(game.table_cards[:3]):
+        # Set the initial position of each card to an off-screen starting point (805, 0)
+        initial_position = (805, 0)
+        card.rect.topleft = initial_position
 
-    flop_3 = game.table_cards[2]
-    flip_card3 = pygame.Rect(0, 0, flop_3.width, flop_3.height)
-    flip_card3.midbottom = (500-80, 325)
-    screen.blit(flop_3.front_image, flip_card3)
+        # Calculate the target position for the current card
+        target_position = flop_positions[index]
+
+        # Animate the card moving from the initial position to the target position
+        move_card(game, screen, card, target_position, speed=10)
+        # Redraw all existing cards (player cards, other table cards) on the screen to maintain the screen state
+        for player in game.seat:
+            for player_card in player.hand:
+                screen.blit(player_card.front_image, player_card.rect)
+
+        for j in range(index + 1):
+            current_card = game.table_cards[j]
+            screen.blit(current_card.front_image, current_card.rect)
 
 
-
+        # Update the display to reflect the current state of the screen
+        pygame.display.update()
+        # Add a delay between animations for smoother animation
+        pygame.time.delay(300)
+    # Final update to the display
+    update_labels(game)
+    create_buttons(game)
+    pygame.display.update()
 
 def show_turn(game, screen):
     """
@@ -77,10 +89,20 @@ def show_turn(game, screen):
     :return:
     """
     turn_card = game.table_cards[3]
-    flip_turn = pygame.Rect(0, 0, turn_card.width, turn_card.height)
-    flip_turn.midbottom = (560-80, 325)
-    screen.blit(turn_card.front_image, flip_turn)
+    initial_position = (805, 0)
+    turn_card.rect.topleft = initial_position
+    target_position = (430, 225)
 
+    move_card(game, screen, turn_card, target_position, speed=10)
+    for player in game.seat:
+        for player_card in player.hand:
+            screen.blit(player_card.front_image, player_card.rect)
+
+    screen.blit(turn_card.front_image, turn_card.rect)
+
+    pygame.display.update()
+    pygame.time.delay(300)
+    pygame.display.update()
 
 
 def show_river(game, screen):
@@ -90,19 +112,28 @@ def show_river(game, screen):
     :param screen:
     :return:
     """
-    river_card = game.table_cards[-1]
-    flip_river = pygame.Rect(0, 0, river_card.width, river_card.height)
-    flip_river.midbottom = (620-80, 325)
-    screen.blit(river_card.front_image, flip_river)
+    river_card = game.table_cards[4]
+    initial_position = (805, 0)
+    river_card.rect.topleft = initial_position
+    target_position = (490, 225)
 
+    move_card(game, screen, river_card, target_position, speed=10)
+    for player in game.seat:
+        for player_card in player.hand:
+            screen.blit(player_card.front_image, player_card.rect)
+
+    screen.blit(river_card.front_image, river_card.rect)
+
+    pygame.display.update()
+    pygame.time.delay(300)
+    pygame.display.update()
 
 #Card Sizes & Position
+
+
 def create_cards(game, screen):
     """
-    creates and draws all cards for all players on the screen
-    :param game:
-    :param screen:
-    :return:
+    Creates and draws all cards for all players on the screen.
     """
     if game.bet_round >= 2:
         show_flop(game, screen)
@@ -111,62 +142,122 @@ def create_cards(game, screen):
     if game.bet_round >= 4:
         show_river(game, screen)
 
-#FIXME rerwite to only include active players in release 2
+    card_locations = [(350, 445), (380, 445), (15, 220), (15, 250), (350, 15), (350, 15), (675, 220), (675, 250)]
+    # Iterate through each player in the game
+    for player_index, player in enumerate(game.seat):
+        for card_index, card in enumerate(player.hand):
+            # Ensure we don't go out of range in card_locations
+            if player_index * 2 + card_index < len(card_locations):
+                # Set the initial position of each card in the upper right corner at (805, 0)
+                initial_position = (805, 0)
+                card.rect.topleft = initial_position
+                # Determine target positions for each card
+                target_position = card_locations[player_index * 2 + card_index]
+
+                # Handle card rotation based on player position
+                if player == game.seat[1] or player == game.seat[3]:
+                    card.front_image = pygame.transform.rotate(card.back_image, 90)
+                    # Adjust the card's rect for the rotated image
+                    card.rect = card.front_image.get_rect(center=card.rect.center)
+                if player == game.seat[2]:
+                    card.front_image = card.back_image
+
+                # Move the card to its target position
+                move_card(game, screen, card, target_position, speed=20)
+
+    # After all cards have been moved, draw all cards on the screen
     for player in game.seat:
+        for card in player.hand:
+            # Display the card image at its position
+            screen.blit(card.front_image, card.rect)
 
-        for j, card in enumerate(player.hand):
+    # Update buttons and labels once all cards are in position
+    create_buttons(game)
+    create_labels(game)
+    # Update the display
+    pygame.display.flip()
 
-            if player == game.seat[0]:
-                if j == 0:
-                    player0_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player0_card1.topleft = (350, 445)
-                    card_rotate1 = pygame.transform.rotate(card.front_image, 90)
-                    screen.blit(card.front_image, player0_card1)
-                elif j == 1:
-                    player0_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player0_card2.topleft = (380, 445)
-                    card_rotate2 = pygame.transform.rotate(card.front_image, 90)
-                    screen.blit(card.front_image, player0_card2)
-            elif player == game.seat[1]:
-                if j == 0:
-                    player1_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player1_card1.topleft = (15, 220)
-                    card_rotate1 = pygame.transform.rotate(card.front_image, 90)
-                    screen.blit(card_rotate1, player1_card1)
-                    pygame.display.update(player1_card1)
-                elif j == 1:
-                    player1_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player1_card2.topleft = (15, 250)
-                    card_rotate2 = pygame.transform.rotate(card.front_image, 90)
-                    screen.blit(card_rotate2, player1_card2)
-                    pygame.display.update(player1_card2)
-            elif player == game.seat[2]:
-                if j == 0:
-                    player2_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player2_card1.topleft = (350, 15)
-                    card_rotate2 = pygame.transform.rotate(card.front_image, 270)
-                    screen.blit(card.front_image, player2_card1)
-                    pygame.display.update(player2_card1)
-                elif j == 1:
-                    player2_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player2_card2.topleft = (380, 15)
-                    card_rotate2 = pygame.transform.rotate(card.front_image, 270)
-                    screen.blit(card.front_image, player2_card2)
-                    pygame.display.update(player2_card2)
-            elif player == game.seat[3]:
-                if j == 0:
-                    player3_card1 = pygame.Rect(0, 0, card.width, card.height)
-                    player3_card1.topleft = (675, 220)
-                    card_rotate1 = pygame.transform.rotate(card.front_image, 270)
-                    screen.blit(card_rotate1, player3_card1)
-                    pygame.display.update(player3_card1)
-                elif j == 1:
-                    player3_card2 = pygame.Rect(0, 0, card.width, card.height)
-                    player3_card2.topleft = (675, 250)
-                    card_rotate2 = pygame.transform.rotate(card.front_image, 270)
-                    screen.blit(card_rotate2, player3_card2)
-                    pygame.display.update(player3_card2)
 
+def move_card(game, screen, card, target_position, speed=10):
+    # Initialize the clock for controlling frame rate
+    clock = pygame.time.Clock()
+
+    # Calculate initial differences and distance between current and target positions
+    x_difference = target_position[0] - card.rect.x
+    y_difference = target_position[1] - card.rect.y
+    distance = (x_difference ** 2 + y_difference ** 2) ** 0.5
+
+    # Calculate initial offsets for smooth movement
+    ratio = speed / distance
+    offset_x = x_difference * ratio
+    offset_y = y_difference * ratio
+
+    # Initial setup of labels and buttons
+    create_labels(game)
+    create_buttons(game)
+
+    # Initialize previous position to card's initial position
+    previous_position = card.rect.copy()
+
+    # Run the animation loop
+    while distance > speed:
+        # Update card position incrementally
+        card.rect.x += offset_x
+        card.rect.y += offset_y
+
+        # Calculate remaining distance
+        x_difference = target_position[0] - card.rect.x
+        y_difference = target_position[1] - card.rect.y
+        distance = (x_difference ** 2 + y_difference ** 2) ** 0.5
+
+        # Calculate new offsets for the next iteration
+        ratio = speed / distance if distance != 0 else 0
+        offset_x = x_difference * ratio
+        offset_y = y_difference * ratio
+
+        # Clear only the area of the previous card position
+        pygame.draw.rect(screen, Color.GREEN.value, previous_position)
+
+        # Update the previous position to the current position
+        previous_position = card.rect.copy()
+
+        # Draw player hands
+        for player in game.seat:
+            for player_card in player.hand:
+                screen.blit(player_card.front_image, player_card.rect)
+
+        # Draw all table cards
+        for table_card in game.table_cards:
+            screen.blit(table_card.front_image, table_card.rect)
+
+        # Draw the moving card in its new position
+        screen.blit(card.front_image, card.rect)
+
+        # Update the display
+        pygame.display.update()
+        update_labels(game)
+        # Control the frame rate for smooth animation
+        clock.tick(60)
+
+    # Once the card reaches the target position, set the final position
+    card.rect.topleft = target_position
+
+    # Final redraw after animation completion
+    screen.fill(Color.GREEN.value)  # Clear the screen
+    # Redraw all player hands
+    for player in game.seat:
+        for player_card in player.hand:
+            screen.blit(player_card.front_image, player_card.rect)
+
+    # Redraw all table cards
+    for table_card in game.table_cards:
+        screen.blit(table_card.front_image, table_card.rect)
+
+    # Draw labels and buttons again at the end of the function
+    update_labels(game)
+    create_buttons(game)
+
+    # Update the display to reflect the final state
     pygame.display.update()
 
 
