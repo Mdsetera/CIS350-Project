@@ -48,6 +48,7 @@ class Game:
             self.seat.append(AIPlayer())
         for player in self.seat:
             player.seat_number = self.seat.index(player)
+            player.chips = 1000
             self.total_game_chips += player.chips
 
         ##everyone is now seated at the table
@@ -346,7 +347,8 @@ class Game:
         else:
             print('comparing hands with the same rank')
             for x in range(len(compare[0].hand)):
-                player_ranked = sorted(compare, key=lambda player: player.hand[x], reverse=True)
+                #sorts players objects based on the value of the first card in their hand, in decending order
+                player_ranked = sorted(compare, key=lambda player: player.hand[x].value, reverse=True)
                 best_card = player_ranked[0].hand[x]
                 best_players = []
                 for player in player_ranked:
@@ -403,6 +405,7 @@ class Card:
         self.rect.topleft = (805, 0)
         self.width = self.rect.width
         self.height = self.rect.height
+        self.dealt = False
 
 
     def __repr__(self):
@@ -414,12 +417,12 @@ class Card:
     def __gt__(self, other):
         return self.value > other.value
     def __eq__(self, other):
-        return self.value == other.value
+        return self.value == other.value and self.suit == other.suit
 
 class Player:
     def __init__(self):
         self.hand = []
-        self.chips = 100
+        self.chips = 0
         self.hand_rank = None
         self.bet = 0
         self.pot_eligibility = 0
@@ -600,7 +603,11 @@ class AIPlayer(Player):
         num_strategies = 4 #when creating a new strategy, this number must be incremented manually
 
         if self.strategy_num == -1:
-            self.strategy_num = random.randint(0, num_strategies-1)
+            random_num = random.randint(0,100)
+            if random_num in range(0, 33): self.strategy_num = 0
+            elif random_num in range(33, 43): self.strategy_num = 1
+            elif random_num in range(43, 76): self.strategy_num = 2
+            elif random_num in range(76, 101): self.strategy_num = 3
         input = self.get_strategy(game)
         super()._play(game, input)#AI player
     def get_strategy(self, game) -> (str,int):
@@ -629,6 +636,7 @@ class AIPlayer(Player):
                         return ('call', 0)
                 elif last_turn[0] == 'check':
                     if moves['check']: return ('check', 0)
+                return ('fold', 0)
             elif game.highest_bet > self.bet + (self.chips * 100) // 50:
                 return ('fold',0)
             elif rank < 8:

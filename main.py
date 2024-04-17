@@ -296,6 +296,9 @@ def delay(seconds:int):
         for event in events:
             if event.type == TIMEREVENT:
                 seconds -= 1
+            elif event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
     pass
 def print_winners(winners):
     for p in winners:

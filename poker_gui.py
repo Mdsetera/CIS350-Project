@@ -53,15 +53,17 @@ def show_flop(game, screen):
 
     # Iterate through the first three flop cards
     for index, card in enumerate(game.table_cards[:3]):
-        # Set the initial position of each card to an off-screen starting point (805, 0)
-        initial_position = (805, 0)
-        card.rect.topleft = initial_position
+        if not card.dealt:
+            # Set the initial position of each card to an off-screen starting point (805, 0)
+            initial_position = (805, 0)
+            card.rect.topleft = initial_position
 
-        # Calculate the target position for the current card
-        target_position = flop_positions[index]
+            # Calculate the target position for the current card
+            target_position = flop_positions[index]
 
-        # Animate the card moving from the initial position to the target position
-        move_card(game, screen, card, target_position, speed=40)
+            # Animate the card moving from the initial position to the target position
+            move_card(game, screen, card, target_position, speed=40)
+            card.dealt = True
         # Redraw all existing cards (player cards, other table cards) on the screen to maintain the screen state
         for player in game.seat:
             for player_card in [card for card in player.hand if not card in game.table_cards]:
@@ -89,14 +91,16 @@ def show_turn(game, screen):
     :return:
     """
     turn_card = game.table_cards[3]
-    initial_position = (805, 0)
-    turn_card.rect.topleft = initial_position
-    target_position = (430, 225)
+    if not turn_card.dealt:
+        initial_position = (805, 0)
+        turn_card.rect.topleft = initial_position
+        target_position = (430, 225)
 
-    move_card(game, screen, turn_card, target_position, speed=40)
-    for player in game.seat:
-        for player_card in [card for card in player.hand if not card in game.table_cards]:
-            screen.blit(player_card.front_image, player_card.rect)
+        move_card(game, screen, turn_card, target_position, speed=40)
+        turn_card.dealt = True
+        for player in game.seat:
+            for player_card in [card for card in player.hand if not card in game.table_cards]:
+                screen.blit(player_card.front_image, player_card.rect)
     screen.blit(turn_card.front_image, turn_card.rect)
 
     pygame.display.update()
@@ -112,14 +116,16 @@ def show_river(game, screen):
     :return:
     """
     river_card = game.table_cards[4]
-    initial_position = (805, 0)
-    river_card.rect.topleft = initial_position
-    target_position = (490, 225)
+    if not river_card.dealt:
+        initial_position = (805, 0)
+        river_card.rect.topleft = initial_position
+        target_position = (490, 225)
 
-    move_card(game, screen, river_card, target_position, speed=40)
-    for player in game.seat:
-        for player_card in [card for card in player.hand if not card in game.table_cards]:
-            screen.blit(player_card.front_image, player_card.rect)
+        move_card(game, screen, river_card, target_position, speed=40)
+        river_card.dealt = True
+        for player in game.seat:
+            for player_card in [card for card in player.hand if (not card in game.table_cards)]:
+                screen.blit(player_card.front_image, player_card.rect)
 
     screen.blit(river_card.front_image, river_card.rect)
 
@@ -134,6 +140,8 @@ def create_cards(game, screen):
     """
     Creates and draws all cards for all players on the screen.
     """
+    all_cards = [card for card in game.table_cards]
+    for player in game.seat: all_cards.extend([card for card in player.hand if card not in game.table_cards])
     if game.bet_round >= 2:
         show_flop(game, screen)
     if game.bet_round >= 3:
@@ -145,31 +153,32 @@ def create_cards(game, screen):
     # Iterate through each player in the game
     for player_index, player in enumerate(game.seat):
         for card_index, card in enumerate(player.hand):
-            # Ensure we don't go out of range in card_locations
-            if player_index * 2 + card_index < len(card_locations):
-                # Set the initial position of each card in the upper right corner at (805, 0)
-                initial_position = (805, 0)
-                card.rect.topleft = initial_position
-                # Determine target positions for each card
-                target_position = card_locations[player_index * 2 + card_index]
+            if not card.dealt:
+                # Ensure we don't go out of range in card_locations
+                if player_index * 2 + card_index < len(card_locations):
+                    # Set the initial position of each card in the upper right corner at (805, 0)
+                    initial_position = (805, 0)
+                    card.rect.topleft = initial_position
+                    # Determine target positions for each card
+                    target_position = card_locations[player_index * 2 + card_index]
 
-                # Handle card rotation based on player position
-                if player == game.seat[1] or player == game.seat[3]:
-                    card.front_image = pygame.transform.rotate(card.front_image, 90)
-                    # Adjust the card's rect for the rotated image
-                    card.rect = card.front_image.get_rect(center=card.rect.center)
-                if player == game.seat[2]:
-                    #card.front_image = card.back_image
-                    pass
+                    # Handle card rotation based on player position
+                    if player == game.seat[1] or player == game.seat[3]:
+                        card.front_image = pygame.transform.rotate(card.front_image, 90)
+                        # Adjust the card's rect for the rotated image
+                        card.rect = card.front_image.get_rect(center=card.rect.center)
+                    if player == game.seat[2]:
+                        #card.front_image = card.back_image
+                        pass
 
-                # Move the card to its target position
-                move_card(game, screen, card, target_position, speed=40)
+                    # Move the card to its target position
+                    move_card(game, screen, card, target_position, speed=40)
+                    card.dealt = True
 
     # After all cards have been moved, draw all cards on the screen
-    for player in game.seat:
-        for card in player.hand:
-            # Display the card image at its position
-            screen.blit(card.front_image, card.rect)
+    for card in all_cards: screen.blit(card.front_image, card.rect) # Display the card image at its position
+
+
 
     # Update buttons and labels once all cards are in position
     create_buttons(game)
@@ -387,7 +396,7 @@ def create_labels(game):
     label0_hand_text = game.seat[0].get_hand_rank_str()
     player0_balance = Label(label0_text, 25, Color.BLACK, (380, 564))
     player0_bet = Label(label0_bet_text, 25, Color.WHITE, (380, 420), visible=game.seat[0].bet>0)
-    player0_hand = Label(label0_hand_text, 25, Color.BLACK, (340, 600))
+    player0_hand = Label(label0_hand_text, 30, Color.BLACK, (250, 520))
     chip1_player0 = Chip((350, 563))
     chip1_player0.change_size(.3)
     bet_chips.append(Chip((350, 419), visible=game.seat[0].bet>0))
@@ -445,7 +454,7 @@ def create_labels(game):
 
     player0_balance.draw(game.screen)
     player0_bet.draw(game.screen)
-    #player0_hand.draw(game.screen)
+    player0_hand.draw(game.screen)
     player1_balance.draw(game.screen)
     player1_bet.draw(game.screen)
     #player1_hand.draw(game.screen)
