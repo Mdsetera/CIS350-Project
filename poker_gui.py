@@ -61,10 +61,10 @@ def show_flop(game, screen):
         target_position = flop_positions[index]
 
         # Animate the card moving from the initial position to the target position
-        move_card(game, screen, card, target_position, speed=10)
+        move_card(game, screen, card, target_position, speed=40)
         # Redraw all existing cards (player cards, other table cards) on the screen to maintain the screen state
         for player in game.seat:
-            for player_card in player.hand:
+            for player_card in [card for card in player.hand if not card in game.table_cards]:
                 screen.blit(player_card.front_image, player_card.rect)
 
         for j in range(index + 1):
@@ -93,11 +93,10 @@ def show_turn(game, screen):
     turn_card.rect.topleft = initial_position
     target_position = (430, 225)
 
-    move_card(game, screen, turn_card, target_position, speed=10)
+    move_card(game, screen, turn_card, target_position, speed=40)
     for player in game.seat:
-        for player_card in player.hand:
+        for player_card in [card for card in player.hand if not card in game.table_cards]:
             screen.blit(player_card.front_image, player_card.rect)
-
     screen.blit(turn_card.front_image, turn_card.rect)
 
     pygame.display.update()
@@ -117,9 +116,9 @@ def show_river(game, screen):
     river_card.rect.topleft = initial_position
     target_position = (490, 225)
 
-    move_card(game, screen, river_card, target_position, speed=10)
+    move_card(game, screen, river_card, target_position, speed=40)
     for player in game.seat:
-        for player_card in player.hand:
+        for player_card in [card for card in player.hand if not card in game.table_cards]:
             screen.blit(player_card.front_image, player_card.rect)
 
     screen.blit(river_card.front_image, river_card.rect)
@@ -142,7 +141,7 @@ def create_cards(game, screen):
     if game.bet_round >= 4:
         show_river(game, screen)
 
-    card_locations = [(350, 445), (380, 445), (15, 220), (15, 250), (350, 15), (350, 15), (675, 220), (675, 250)]
+    card_locations = [(350, 445), (380, 445), (15, 220), (15, 250), (350, 15), (380, 15), (675, 220), (675, 250)]
     # Iterate through each player in the game
     for player_index, player in enumerate(game.seat):
         for card_index, card in enumerate(player.hand):
@@ -156,14 +155,15 @@ def create_cards(game, screen):
 
                 # Handle card rotation based on player position
                 if player == game.seat[1] or player == game.seat[3]:
-                    card.front_image = pygame.transform.rotate(card.back_image, 90)
+                    card.front_image = pygame.transform.rotate(card.front_image, 90)
                     # Adjust the card's rect for the rotated image
                     card.rect = card.front_image.get_rect(center=card.rect.center)
                 if player == game.seat[2]:
-                    card.front_image = card.back_image
+                    #card.front_image = card.back_image
+                    pass
 
                 # Move the card to its target position
-                move_card(game, screen, card, target_position, speed=20)
+                move_card(game, screen, card, target_position, speed=40)
 
     # After all cards have been moved, draw all cards on the screen
     for player in game.seat:
@@ -178,7 +178,7 @@ def create_cards(game, screen):
     pygame.display.flip()
 
 
-def move_card(game, screen, card, target_position, speed=10):
+def move_card(game, screen, card, target_position, speed=40):
     # Initialize the clock for controlling frame rate
     clock = pygame.time.Clock()
 

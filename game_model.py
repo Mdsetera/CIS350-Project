@@ -10,7 +10,6 @@ game. Features include a functional GUI, AI Players, and a tournament mode.
 """
 import random
 import copy
-#import pygame as pg
 from enum import Enum
 
 import pygame
@@ -401,8 +400,10 @@ class Card:
         self.front_image = pygame.transform.scale(self.front_image, (self.width, self.height))
         self.back_image = pygame.transform.scale(self.back_image, (self.width, self.height))
         self.rect = self.front_image.get_rect()
+        self.rect.topleft = (805, 0)
         self.width = self.rect.width
         self.height = self.rect.height
+
 
     def __repr__(self):
         return f'{self.value},{self.suit}'
