@@ -216,7 +216,9 @@ def get_player_input(game: Game, player: Player) -> (str,int):
             if button.check_click(mouse_pos, events):
                 if button.text == "Back" and button.enabled:
                     if start_screen() == 0:
-                        return main()
+                        main()
+                    elif start_screen() == 1:
+                        blackjack.game()
                 if button.text == "Fold" and button.enabled:
                     game.screen.fill((0, 128, 0), timer_rect)
                     if betslider:betslider.remove(game.screen)

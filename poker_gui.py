@@ -370,7 +370,7 @@ def enable_buttons(game, player):
             button.enabled = True
         elif moves['bet'] and button.text == 'Bet':
             button.enabled = True
-        elif moves['back'] and button.text == "Back":
+        elif button.text == 'Back':
             button.enabled = True
         button.draw(game.screen)
     pygame.display.flip()
