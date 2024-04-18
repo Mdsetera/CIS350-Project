@@ -41,7 +41,7 @@ def start_screen() -> int: #0 for texas holdem, 1 for blackjack
         pygame.draw.rect(screen, (0, 0, 0), blackjack_button)
 
         start_text = font.render("Start Game", True, (255, 255, 255))
-        blackjack_text = font.render("BlackJack Mode", True, (255, 255, 255))
+        blackjack_text = font.render("BlackJack", True, (255, 255, 255))
         quit_text = font.render("Quit", True, (255, 255, 255))
         created_by_text = font.render("Created By: Mitchell Setera, Austin Jackson, & Caleb Taylor",
                                       True, (0, 0, 0))

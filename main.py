@@ -1,6 +1,7 @@
 import copy
 import random
 import pygame
+import blackjack
 import poker_gui as gui
 from start_screen import start_screen
 from game_model import Game, Player, UserPlayer
@@ -309,6 +310,6 @@ if __name__ == '__main__':
     if start_screen() == 0:
         main()
     else:
-        main()#FIXME delete when blackjack mode is complete
-        #blackjack()
+        blackjack.game()
+
 
