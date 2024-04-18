@@ -1,5 +1,7 @@
 import pygame
+from start_screen import start_screen
 import game_model
+import main
 from game_model import Deck, Card, Suit
 
 window_start_width = 805
@@ -95,9 +97,11 @@ def push_message(screen):
     pygame.time.delay(1500)
     game()
 
+
 def show_cards(screen, deck):
     for card in deck.stack:
         screen.blit(card.back_image, (100, 220))
+
 
 def create_labels(playerscore, dealerscore, screen):
     pygame.font.init()
@@ -107,13 +111,25 @@ def create_labels(playerscore, dealerscore, screen):
     dealer_label = font.render(f"Dealer's Hand:", True, (255, 255, 255))
     p_score_label = font.render(f"{playerscore}", True, (255, 255, 255))
     d_score_label = font.render(f"{dealerscore}", True, (255, 255, 255))
-    chipcount = font.render(f"{playerchips}", True, (255, 255, 255))
+    chipcount = font.render(f"Chips:{playerchips}", True, (255, 255, 255))
     screen.blit(player_label, (10, 500))
     screen.blit(dealer_label, (10, 10))
     screen.blit(p_score_label, (70, 530))
     screen.blit(d_score_label, (70, 40))
-    screen.blit(chipcount, (48, 580))
+    screen.blit(chipcount, (12, 580))
     pygame.display.update()
+
+
+def back_button(screen):
+    font = pygame.font.Font(None, 36)
+
+    backbutton = pygame.Rect(700, 0, 80, 50)
+    pygame.draw.rect(screen, (0, 0, 0), backbutton)
+    back_text = font.render("Back", True, (255, 255, 255))
+    screen.blit(back_text, (715, 15))
+    pygame.display.flip()
+    return backbutton
+
 
 def deal_cards(screen, card, target_position, speed=10):
     # Initialize the clock for controlling frame rate
@@ -178,7 +194,6 @@ def deal_cards(screen, card, target_position, speed=10):
 
     # Draw the card in its final position on the screen
     screen.blit(card.front_image, card.rect)
-
     # Update the display to reflect the final state
     pygame.display.flip()
 
@@ -227,7 +242,6 @@ def create_buttons(screen):
     pygame.draw.rect(screen, (0, 0, 0), hit_button)
     pygame.draw.rect(screen, (0, 0, 0), stand_button)
 
-
     hit_text = font.render("Hit", True, (255, 255, 255))
     stand_text = font.render("Stand", True, (255, 255, 255))
 
@@ -249,7 +263,6 @@ def handle_hit(player, dealer, deck, screen):
         print('HIT! New card dealt to player.')
         print(player)
         hitcount += 1
-
 
 
 def handle_stand(dealer, player, deck, screen):
@@ -287,13 +300,6 @@ def handle_stand(dealer, player, deck, screen):
 
     elif dealer_score == player_score:
         push_message(screen)
-
-
-
-
-
-
-
 
 
 def calculate_scores(player):
@@ -395,15 +401,22 @@ def game():
     # Set initial game stage
     current_stage = stage_bet
     create_bet_buttons(screen)
+    back_button(screen)
+    back_button_rect = pygame.Rect(700, 0, 80, 50)
     # Game loop
     while running:
         # Process events
+        back_button(screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Handle bet phase
-                if current_stage == stage_bet:
+                if back_button_rect.collidepoint(event.pos):
+                    start_screen()
+                    if start_screen() != 0:
+                        game()
+                elif current_stage == stage_bet:
                     create_bet_buttons(screen)
                     # Handle bet button clicks
                     bet_amount = None

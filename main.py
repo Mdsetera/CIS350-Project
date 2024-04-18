@@ -9,7 +9,6 @@ from game_model import Game, Player, UserPlayer
 
 screen, clock = gui.init_pygame()
 
-
 def main():
     """
     Main will create and run the game and gui
@@ -24,6 +23,7 @@ def main():
 
 
     running = True
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -214,6 +214,9 @@ def get_player_input(game: Game, player: Player) -> (str,int):
         #events = pygame.event.get()
         for button in gui.buttons:
             if button.check_click(mouse_pos, events):
+                if button.text == "Back" and button.enabled:
+                    if start_screen() == 0:
+                        return main()
                 if button.text == "Fold" and button.enabled:
                     game.screen.fill((0, 128, 0), timer_rect)
                     if betslider:betslider.remove(game.screen)

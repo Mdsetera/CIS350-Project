@@ -477,7 +477,7 @@ class Player:
         :param game: current game
         :return: moves dict
         """
-        moves = {"fold": True, "check": False, "call": False, "bet": False}
+        moves = {"fold": True, "check": False, "call": False, "bet": False, "back":True}
         if self.all_in:
             return {"fold": False, "check": False, "call": False, "bet": False}
         if game.highest_bet == self.bet:

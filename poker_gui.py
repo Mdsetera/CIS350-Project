@@ -342,6 +342,8 @@ def create_buttons(game):
     check_button = Button(475, 630, 100, 50, "Check", 30, False)
     call_button = Button(585, 630, 100, 50, "Call", 30, False)
     bet_button = Button(695, 630, 100, 50, "Bet", 30, False)
+    back_button = Button(700, 15, 80, 50, "Back", 36, True)
+    back_button.draw(game.screen)
     fold_button.draw(game.screen)
     check_button.draw(game.screen)
     call_button.draw(game.screen)
@@ -367,6 +369,8 @@ def enable_buttons(game, player):
         elif moves['call'] and button.text == 'Call':
             button.enabled = True
         elif moves['bet'] and button.text == 'Bet':
+            button.enabled = True
+        elif moves['back'] and button.text == "Back":
             button.enabled = True
         button.draw(game.screen)
     pygame.display.flip()
