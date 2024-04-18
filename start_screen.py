@@ -27,7 +27,7 @@ def start_screen() -> int: #0 for texas holdem, 1 for blackjack
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_button.collidepoint(event.pos):
-                    return  0# Starts the game
+                    return  0 # Starts the game
                 elif quit_button.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()

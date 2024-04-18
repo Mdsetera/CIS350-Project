@@ -13,14 +13,12 @@ dealers_card_face_down = True
 
 
 def init_pygame():
-    """
-    Initializes the game window and returns the screen and clock objects.
-    """
     pygame.init()
     screen = pygame.display.set_mode((window_start_width, window_start_height), pygame.RESIZABLE | pygame.DOUBLEBUF)
     pygame.display.set_caption("Blackjack!")
     clock = pygame.time.Clock()
     return screen, clock
+
 
 def player_blackjack(screen):
     pygame.font.init()
@@ -132,69 +130,69 @@ def back_button(screen):
 
 
 def deal_cards(screen, card, target_position, speed=10):
-    # Initialize the clock for controlling frame rate
+    # Initialize the clock for frame rate control
     clock = pygame.time.Clock()
 
-    # Calculate initial x and y differences
+    #Calculate initial x and y differences
     x_difference = target_position[0] - card.rect.x
     y_difference = target_position[1] - card.rect.y
 
 
     # Handle horizontal movement first
     while abs(x_difference) > speed:
-        # Clear the card's current position area using the background color
+        #Clear card's current position using the background color
         pygame.draw.rect(screen, (139, 0, 0), card.rect)
 
-        # Update the card's x position incrementally
+        #Update card's x position incrementally
         if x_difference > 0:
             card.rect.x += speed
         else:
             card.rect.x -= speed
         screen.blit(card.back_image, (50, 260))
-        # Update the x difference
+        #Update x difference
         x_difference = target_position[0] - card.rect.x
 
         pygame.draw.rect(screen, (139, 0, 0), card.rect)
-        # Draw the card at its new x position
+        #Draw card at new x position
         screen.blit(card.front_image, card.rect)
 
-        # Control the frame rate for smooth animation
+        #Smoother animations
         clock.tick(60)
 
         pygame.display.update()
 
-    # Now handle vertical movement
+    #Handle vertical movement
     while abs(y_difference) > speed:
         screen.blit(card.back_image, (50, 260))
-        # Clear the card's current position area using the background color
+        #Clear card's current position using the background color
         pygame.draw.rect(screen, (139, 0, 0), card.rect)
 
-        # Update the card's y position incrementally
+        #Update card's y position incrementally
         if y_difference > 0:
             card.rect.y += speed
         else:
             card.rect.y -= speed
 
-        # Update the y difference
+        #Update y difference
         y_difference = target_position[1] - card.rect.y
 
-        # Draw the card at its new y position
+        #Draw card at its new y position
         screen.blit(card.front_image, card.rect)
 
-        # Control the frame rate for smooth animation
+        #Make smoother animations
         clock.tick(60)
 
         pygame.display.update()
 
-    # Once the card reaches the target position, set the final position
+    #Once the card reaches target position, set final position
     card.rect.topleft = target_position
 
-    # Clear the card's final position area using the background color
+    #Clear card's final area using the background color
     pygame.draw.rect(screen, (139, 0, 0), card.rect)
 
-    # Draw the card in its final position on the screen
+    #Draw card in its final position on the screen
     screen.blit(card.front_image, card.rect)
-    # Update the display to reflect the final state
+    #Update display to show the final state
     pygame.display.flip()
 
 
@@ -330,13 +328,12 @@ def calculate_dealer_score(dealer, dealers_card_face_down):
     total_score = 0
     ace_count = 0
 
-    # Iterate through dealer's cards
     for i, card in enumerate(dealer):
-        # If the card is facedown, skip it if dealers_card_face_down is True
+        #Skip if card facedown
         if i == 1 and dealers_card_face_down:
             continue
 
-        # Add the card's value to the total score
+        #Add card's value to total score
         if card.value == 'Ace':
             ace_count += 1
             total_score += 11
@@ -345,7 +342,7 @@ def calculate_dealer_score(dealer, dealers_card_face_down):
         else:
             total_score += int(card.value)
 
-    # Adjust the score if there are any Aces and the total score is greater than 21
+    #Change the score if there are any Aces and the total score is greater than 21
     while ace_count > 0 and total_score > 21:
         total_score -= 10
         ace_count -= 1
@@ -354,17 +351,16 @@ def calculate_dealer_score(dealer, dealers_card_face_down):
 
 
 def update_dealer_cards(dealer, screen, dealers_card_face_down):
-    # Iterate through dealer's cards
     for i, card in enumerate(dealer):
         if i == 1:
-            # Display front image if card should be face-up
+            #Show front image if card should be face-up
             if not dealers_card_face_down:
                 screen.blit(card.front_image, (150 + (i * 100), 50))
-            # Display back image if card should be face-down
+            #Show back image if card should be face-down
             else:
                 screen.blit(card.back_image, (150 + (i * 100), 50))
         else:
-            # Display front image for all other cards
+            #Show front image for all other cards
             screen.blit(card.front_image, (150 + (i * 100), 50))
 
 
@@ -405,13 +401,11 @@ def game():
     back_button_rect = pygame.Rect(700, 0, 80, 50)
     # Game loop
     while running:
-        # Process events
         back_button(screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # Handle bet phase
                 if back_button_rect.collidepoint(event.pos):
                     start_screen()
                     if start_screen() != 0:
@@ -436,7 +430,7 @@ def game():
                         playerbet = bet_amount
                         playerchips -= bet_amount
 
-                        # Transition to play phase and deal initial cards
+                        # switch to play phase and deal cards
                         current_stage = stage_play
                         player.append(deck.stack.pop(0))
                         dealer.append(deck.stack.pop(0))
@@ -462,7 +456,6 @@ def game():
         dealerscore = calculate_dealer_score(dealer, dealers_card_face_down)
         create_labels(playerscore, dealerscore, screen)
 
-        # Displaying the player's and dealer's cards in the play phase
         if current_stage == stage_play:
             create_buttons(screen)
             # Deal and animate cards to the player and dealer
@@ -473,12 +466,11 @@ def game():
             for i, card in enumerate(dealer):
                 if i == 1 and dealers_card_face_down:
                     screen.blit(card.back_image, (180 + (i * 100), 50))
-                    #deal_cards(screen, card.back_image, (150 + (i * 100), 50), speed=10)
+
                 else:
                     deal_cards(screen, card, (180 + (i * 100), 50), speed=10)
-        # Redraw game elements based on the current stage
 
-
+        #Redraw game rects based on the current stage
             create_buttons(screen)
             player_score = calculate_scores(player)
             dealer_score = calculate_dealer_score(dealer, dealers_card_face_down)
@@ -495,16 +487,16 @@ def game():
                 push_message(screen)
                 playerchips = playerchips + playerbet
         elif current_stage == stage_bet:
-            # Create and display bet buttons
+            # Create bet buttons
             create_bet_buttons(screen)
 
         # Update display
         pygame.display.flip()
         clock.tick(60)
 
-    # Clean up and exit
+
     pygame.quit()
-# Run the main function to start the game loop
+
 if __name__ == '__main__':
     game()
 
