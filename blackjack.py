@@ -18,11 +18,98 @@ def init_pygame():
     clock = pygame.time.Clock()
     return screen, clock
 
+def player_blackjack(screen):
+    pygame.font.init()
+    font = pygame.font.Font(None, 58)
+
+    player_bjmessage = font.render("You have blackjack! You win!", True, (255, 255, 255))
+    screen.blit(player_bjmessage, (200, 350))
+    pygame.display.update()
+    pygame.time.delay(1500)
+    game()
+
+
+def dealer_blackjack(screen):
+    pygame.font.init()
+    font = pygame.font.Font(None, 58)
+
+    player_bjmessage = font.render("Dealer blackjack! You lose!", True, (255, 255, 255))
+    screen.blit(player_bjmessage, (200, 350))
+    pygame.display.update()
+    pygame.time.delay(1500)
+    game()
+
+
+def player_busted_message(screen):
+    pygame.font.init()
+    font = pygame.font.Font(None, 58)
+
+    player_bjmessage = font.render("You busted! You lose!", True, (255, 255, 255))
+    screen.blit(player_bjmessage, (200, 350))
+    pygame.display.update()
+    pygame.time.delay(1500)
+    game()
+
+
+def dealer_busted_message(screen):
+    pygame.font.init()
+    font = pygame.font.Font(None, 58)
+
+    player_bjmessage = font.render("Dealer busted! You win!", True, (255, 255, 255))
+    screen.blit(player_bjmessage, (200, 350))
+    pygame.display.update()
+    pygame.time.delay(1500)
+    game()
+
+def player_loses(screen):
+    pygame.font.init()
+    font = pygame.font.Font(None, 58)
+
+    player_bjmessage = font.render("You Lose!", True, (255, 255, 255))
+    screen.blit(player_bjmessage, (200, 350))
+    pygame.display.update()
+    pygame.time.delay(1500)
+    game()
+
+
+def player_wins(screen):
+    pygame.font.init()
+    font = pygame.font.Font(None, 58)
+
+    player_bjmessage = font.render("You Win", True, (255, 255, 255))
+    screen.blit(player_bjmessage, (200, 350))
+    pygame.display.update()
+    pygame.time.delay(1500)
+    game()
+
+
+def push_message(screen):
+    pygame.font.init()
+    font = pygame.font.Font(None, 58)
+
+    player_bjmessage = font.render("Push! Try Again!", True, (255, 255, 255))
+    screen.blit(player_bjmessage, (400, 350))
+    pygame.display.update()
+    pygame.time.delay(1500)
+    game()
 
 def show_cards(screen, deck):
     for card in deck.stack:
         screen.blit(card.back_image, (100, 220))
 
+def create_labels(playerscore, dealerscore, screen):
+    pygame.font.init()
+    font = pygame.font.Font(None, 36)
+
+    player_label = font.render(f"Your Hand:", True, (255, 255, 255))
+    dealer_label = font.render(f"Dealer's Hand:", True, (255, 255, 255))
+    p_score_label = font.render(f"{playerscore}", True, (255, 255, 255))
+    d_score_label = font.render(f"{dealerscore}", True, (255, 255, 255))
+    screen.blit(player_label, (10, 500))
+    screen.blit(dealer_label, (10, 10))
+    screen.blit(p_score_label, (70, 530))
+    screen.blit(d_score_label, (70, 40))
+    pygame.display.update()
 
 def deal_cards(screen, card, target_position, speed=10):
     # Initialize the clock for controlling frame rate
@@ -47,6 +134,7 @@ def deal_cards(screen, card, target_position, speed=10):
         # Update the x difference
         x_difference = target_position[0] - card.rect.x
 
+        pygame.draw.rect(screen, (139, 0, 0), card.rect)
         # Draw the card at its new x position
         screen.blit(card.front_image, card.rect)
 
@@ -129,27 +217,25 @@ def create_buttons(screen):
 
     hit_button = pygame.Rect(500, 630, 80, 50)
     stand_button = pygame.Rect(350, 630, 80, 50)
-    split_button = pygame.Rect(200, 630, 80, 50)
 
     global button_list
-    button_list = [hit_button, stand_button, split_button]
+    button_list = [hit_button, stand_button]
     pygame.draw.rect(screen, (0, 0, 0), hit_button)
     pygame.draw.rect(screen, (0, 0, 0), stand_button)
-    pygame.draw.rect(screen, (0, 0, 0), split_button)
+
 
     hit_text = font.render("Hit", True, (255, 255, 255))
     stand_text = font.render("Stand", True, (255, 255, 255))
-    split_text = font.render("Split", True, (255, 255, 255))
 
     screen.blit(hit_text, (525, 645))
     screen.blit(stand_text, (355, 645))
-    screen.blit(split_text, (210, 645))
+
     pygame.display.flip()
 
-    return hit_button, stand_button, split_button
+    return hit_button, stand_button
 
 
-def handle_hit(player, deck, screen):
+def handle_hit(player, dealer, deck, screen):
     hitcount = 0
     if len(deck.stack) > 0:
         # Take the top card from the deck
@@ -159,37 +245,17 @@ def handle_hit(player, deck, screen):
         print('HIT! New card dealt to player.')
         print(player)
         hitcount += 1
-    else:
-        print('No more cards left in the deck.')
-    playerscore = calculate_scores(player)
-    if playerscore > 21:
-        print("You busted! You Lose!")
 
 
 
-
-def handle_stand(dealer, player, deck):
+def handle_stand(dealer, player, deck, screen):
     dealer_score = calculate_scores(dealer)
-    player_score = calculate_scores(player)
     while dealer_score < 17:
         if len(deck.stack) > 0:
             new_card = deck.stack.pop(0)
             dealer.append(new_card)
             dealer_score = calculate_scores(dealer)
-
-    if (dealer_score > 21) and (player_score <= 21):
-        print("Dealer busts! You Win!")
-    elif (dealer_score == 21) and (player_score < 21):
-        print("Dealer has Blackjack! You lose!")
-    elif (dealer_score > player_score) and (dealer_score <= 21):
-        print("You Lose!")
-    elif (player_score > dealer_score) and (player_score <= 21):
-        print("You Win!")
-    elif player_score == dealer_score:
-        print("Push!")
-
     return dealer_score
-
 
 
 
@@ -219,17 +285,20 @@ def calculate_scores(player):
 
 
 
-
-#def get_player_bet():
-
-
-
 def game():
+    import pygame
     global current_stage
     global playerchips
     global playerbet
     global player
     global dealer
+
+    # Constants for game stages
+    stage_bet = 1
+    stage_play = 2
+
+
+    # Initialize game state
     playerchips = 1000
     playerbet = 0
     player = []
@@ -238,21 +307,16 @@ def game():
     running = True
     deck = Deck()
     deck.shuffle()
-
-    # Initialize the positions of the cards
     for card in deck.stack:
-        card.rect.topleft = (100, 280)
+        card.rect.topleft = (100, 220)
 
-    # Deal initial cards to player and dealer
-    player.append(deck.stack.pop(0))
-    dealer.append(deck.stack.pop(0))
-    player.append(deck.stack.pop(0))
-    dealer.append(deck.stack.pop(0))
-    print(player, dealer)
-    # Create buttons
+    # Create buttons for betting
     five_button, twentyfive_button, fifty_button, onehundred_button, fivehundred_button = create_bet_buttons(screen)
-    hit_button, stand_button, split_button = create_buttons(screen)
+    hit_button, stand_button = create_buttons(screen)
 
+    # Set initial game stage
+    current_stage = stage_bet
+    create_bet_buttons(screen)
     # Game loop
     while running:
         # Process events
@@ -262,53 +326,76 @@ def game():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 # Handle bet phase
                 if current_stage == stage_bet:
+                    create_bet_buttons(screen)
                     # Handle bet button clicks
+                    bet_amount = None
                     if five_button.collidepoint(event.pos):
-                        playerbet = 5
-                        playerchips -= 5
+                        bet_amount = 5
                     elif twentyfive_button.collidepoint(event.pos):
-                        playerbet = 25
-                        playerchips -= 25
+                        bet_amount = 25
                     elif fifty_button.collidepoint(event.pos):
-                        playerbet = 50
-                        playerchips -= 50
+                        bet_amount = 50
                     elif onehundred_button.collidepoint(event.pos):
-                        playerbet = 100
-                        playerchips -= 100
+                        bet_amount = 100
                     elif fivehundred_button.collidepoint(event.pos):
-                        playerbet = 500
-                        playerchips -= 500
+                        bet_amount = 500
 
-                    # Transition to the play phase
-                    current_stage = stage_play
+                    # If a valid bet amount is chosen
+                    if bet_amount is not None and bet_amount <= playerchips:
+                        playerbet = bet_amount
+                        playerchips -= bet_amount
+
+                        # Transition to play phase and deal initial cards
+                        current_stage = stage_play
+                        player.append(deck.stack.pop(0))
+                        dealer.append(deck.stack.pop(0))
+                        player.append(deck.stack.pop(0))
+                        dealer.append(deck.stack.pop(0))
 
                 # Handle play phase
                 elif current_stage == stage_play:
                     if hit_button.collidepoint(event.pos):
-                        handle_hit(player, deck, screen)
+                        handle_hit(player, dealer, deck, screen)
+                        pygame.display.update()
                     elif stand_button.collidepoint(event.pos):
-                        handle_stand(dealer, player, deck)
-
+                        handle_stand(dealer, player, deck, screen)
+                        pygame.display.update()
 
         # Clear the screen
         screen.fill((139, 0, 0))
-        show_cards(screen, deck)
+        playerscore = calculate_scores(player)
+        dealerscore = calculate_scores(dealer)
+        create_labels(playerscore, dealerscore, screen)
+
+        # Displaying the player's and dealer's cards in the play phase
+        if current_stage == stage_play:
+            create_buttons(screen)
+            # Deal and animate cards to the player and dealer
+            for i, card in enumerate(player):
+                screen.blit(card.back_image, (100, 220))
+                deal_cards(screen, card, (150 + (i * 100), 485), speed=10)
+
+            for i, card in enumerate(dealer):
+                deal_cards(screen, card, (150 + (i * 100), 50), speed=10)
         # Redraw game elements based on the current stage
-        if current_stage == stage_bet:
+
+
+            create_buttons(screen)
+            player_score = calculate_scores(player)
+            dealer_score = calculate_scores(dealer)
+            if (dealer_score > 21) and (player_score <= 21):
+                dealer_busted_message(screen)
+            elif (dealer_score == 21) and (player_score < 21):
+                dealer_blackjack(screen)
+            elif (playerscore == 21) and (dealerscore < 21):
+                player_blackjack(screen)
+            elif playerscore > 21:
+                player_busted_message(screen)
+            elif player_score == dealer_score:
+                push_message(screen)
+        elif current_stage == stage_bet:
             # Create and display bet buttons
             create_bet_buttons(screen)
-        elif current_stage == stage_play:
-            # Create and display hit, stand, and split buttons
-            create_buttons(screen)
-            calculate_scores(player)
-            calculate_scores(dealer)
-        # Redraw the cards on the table for both player and dealer
-        for i, card in enumerate(player):
-            deal_cards(screen, card, (145 + 100 * i, 455), speed=10)
-        for i, card in enumerate(dealer):
-            deal_cards(screen, card, (145 + 100 * i, 15), speed=10)
-
-
 
         # Update display
         pygame.display.flip()
