@@ -60,7 +60,7 @@ class Game:
         ##deal the cards
         self.round += 1
         self.screen = screen
-        self.active_players = [player for player in self.seat if player.chips > 0]
+        self.active_players = [player for player in self.seat if player.out == False]
 
 
     def deal_initial_cards(self):
@@ -100,26 +100,29 @@ class Game:
         if player does not have enough for the blind the remainder of their chips are taken and they go allin
         :return:
         """
-        player_turn = self.dealer_seat + 1 if self.dealer_seat + 1 < len(self.seat) else 0
-        if self.seat[player_turn] in self.active_players:
-            self.current_player = self.seat[player_turn]
-            if self.current_player.bet != 0: raise ValueError('player.bet should be zero')
-            if len(self.active_players) == 2:
-                self.handle_big_blind(self.current_player)
-                self.current_player = self.next_player(self.current_player)
-            else:
-                self.handle_small_blind(self.current_player)
-                self.current_player = self.next_player(self.current_player)
-                self.handle_big_blind(self.current_player)
-                self.current_player = self.next_player(self.current_player)
-        else:
+        big_blind_found = False
+        sml_blind_found = False
+        if len(self.active_players) <= 1: raise ValueError('game.active_players < 2, the game should have already ended')
+        player_turn = self.dealer_seat
+        while(not(big_blind_found and sml_blind_found)):
             player_turn = player_turn + 1 if player_turn + 1 < len(self.seat) else 0
+            if self.seat[player_turn] in self.active_players:
+                self.current_player = self.seat[player_turn]
+                if big_blind_found == False:
+                    self.handle_big_blind(self.current_player)
+                    big_blind_found = True
+                    print(f'big blind taken from {self.current_player}')
+                elif len(self.active_players) >= 2:
+                    self.handle_small_blind(self.current_player)
+                    sml_blind_found = True
+                    print(f'sml blind taken from {self.current_player}')
         print('blinds taken')
 
     def handle_small_blind(self, current_player):
         #handles the small blind
         if current_player.chips < self.sml_blind:
             current_player.bet = current_player.chips
+            current_player.chips -= current_player.bet
             current_player.all_in = True
             self.highest_bet = current_player.bet
         else:
@@ -131,6 +134,7 @@ class Game:
         #hanldes the big blind
         if current_player.chips < self.big_blind:
             current_player.bet = current_player.chips
+            current_player.chips -= current_player.bet
             current_player.all_in = True
         else:
             current_player.bet = self.big_blind
@@ -244,6 +248,7 @@ class Game:
         return True
     def check_end_round(self) -> bool:
         #if there is only one player left return true
+        print(f'checking end of round')
         if len(self.active_players) == 1:
             return True
         return False
@@ -295,7 +300,8 @@ class Game:
             player.hand = []
             player.bet = 0
             player.fold = False
-            if player.chips > 0: player.all_in = False
+            player.all_in = False
+            if player.chips <= 0: player.out = True
             total_table_chips += player.chips
         #if total_table_chips != self.total_game_chips: raise ValueError(f'Round: {self.round}, pot was not awarded correctly')
     @property
@@ -431,6 +437,7 @@ class Player:
         self.seat_number = -1
         self.fold = False
         self.last_turn = None
+        self.out = False
     def __str__(self):
         return f'Player {self.seat_number}'
     def __repr__(self):
@@ -528,7 +535,6 @@ class Player:
         # max_bet is calculated as the maximum of total chips among other players
         # minus the current player's bet, or the remaining chips of the current player (self.chips), whichever is smaller.
         max_bet = max(total_chips) - self.bet if max(total_chips) - self.bet < self.chips else self.chips
-
         return min_bet, max_bet
 
     def get_hand_rank(self) -> (int, [Card]):
@@ -604,10 +610,10 @@ class AIPlayer(Player):
 
         if self.strategy_num == -1:
             random_num = random.randint(0,100)
-            if random_num in range(0, 33): self.strategy_num = 0
-            elif random_num in range(33, 43): self.strategy_num = 1
-            elif random_num in range(43, 76): self.strategy_num = 2
-            elif random_num in range(76, 101): self.strategy_num = 3
+            if random_num in range(0, 50): self.strategy_num = 0
+            elif random_num in range(50, 60): self.strategy_num = 1
+            elif random_num in range(60, 80): self.strategy_num = 2
+            elif random_num in range(80, 101): self.strategy_num = 3
         input = self.get_strategy(game)
         super()._play(game, input)#AI player
     def get_strategy(self, game) -> (str,int):
@@ -619,13 +625,17 @@ class AIPlayer(Player):
         if self.strategy_num == 0:
             last_turn = game.previous_player(self).last_turn #last turn of the previous player
             if rank == 9 and game.bet_round > 1:
+                if game.highest_bet == game.big_blind:
+                    return ('call', 0)
                 if self.hand[0].value >= 12:
                     return ('call', 0)
                 else:
                     return ('fold', 0)
             elif rank == 8: #pair
+                if game.bet_round == 1:
+                    return ('call', 0)
                 if last_turn[0] == 'bet':
-                    if last_turn[1] > self.bet + (self.chips * 100) // 20:
+                    if last_turn[1] > self.bet + (self.chips // 5):
                         return ('fold', 0)
                     else:
                         return ('call', 0)
@@ -636,6 +646,7 @@ class AIPlayer(Player):
                         return ('call', 0)
                 elif last_turn[0] == 'check':
                     if moves['check']: return ('check', 0)
+                if moves['call']: return ('call',0)
                 return ('fold', 0)
             elif game.highest_bet > self.bet + (self.chips * 100) // 50:
                 return ('fold',0)

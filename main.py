@@ -130,7 +130,7 @@ def take_bets(game:Game):
     game.update_highest_bet()
     turn_not_taken = []
     everyone_took_turn = False
-    game.active_players = [player for player in game.seat if (player.chips > 0 and not player.fold)]
+    #game.active_players = [player for player in game.seat if (not player.out and not player.fold)]
     print(f'Round {game.round} active players -> {game.active_players}')
     for player in game.active_players: turn_not_taken.append(player)
     while not (game.equal_bets() and not turn_not_taken) and len(game.active_players) > 1:
@@ -142,7 +142,7 @@ def take_bets(game:Game):
         else:
             #FIXME implement a small timer for the computer turns
             print(f'{player}\'s turn')
-            delay(2) #in seconds
+            delay(game, player, 3) #in seconds
             game.current_player = game.next_player(player)
             player._play(game) #AI player
         if player in turn_not_taken: turn_not_taken.remove(player)
@@ -287,19 +287,32 @@ def get_player_input(game: Game, player: Player) -> (str,int):
     raise ValueError('no input received')
     return ('fold', 0)
 
-def delay(seconds:int):
+def delay(game, player, countdown_time:int):
     # creating event to track timer
     TIMEREVENT = pygame.USEREVENT + 2
     # create_timer
     pygame.time.set_timer(TIMEREVENT, 1000)
-    while seconds > 0:
+    while countdown_time > 0:
         events = pygame.event.get()
         for event in events:
             if event.type == TIMEREVENT:
-                seconds -= 1
+                countdown_time -= 1
             elif event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+        font = pygame.font.Font(None, 55)
+        timer_positions = [(250,465),(140,255),(470,50),(625,255)]
+        pos = timer_positions[game.seat.index(player)]
+        #create rect to clear the timer space before incrementing countdown to prevent overlapping
+        timer_rect = pygame.Rect(pos[0], pos[1],50, 50)
+        game.screen.fill((0, 128, 0), timer_rect)
+
+        #update timer while no input recieved
+        timer_text = font.render(str(countdown_time), True, (255, 255, 255))
+        game.screen.blit(timer_text, pos)
+        pygame.display.flip()
+        if countdown_time <= 0:
+            game.screen.fill((0, 128, 0), timer_rect)
     pass
 def print_winners(winners):
     for p in winners:

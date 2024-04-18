@@ -152,6 +152,8 @@ def create_cards(game, screen):
     card_locations = [(350, 445), (380, 445), (15, 220), (15, 250), (350, 15), (380, 15), (675, 220), (675, 250)]
     # Iterate through each player in the game
     for player_index, player in enumerate(game.seat):
+        if player.out:
+            continue
         for card_index, card in enumerate(player.hand):
             if not card.dealt:
                 # Ensure we don't go out of range in card_locations
@@ -164,11 +166,11 @@ def create_cards(game, screen):
 
                     # Handle card rotation based on player position
                     if player == game.seat[1] or player == game.seat[3]:
-                        card.front_image = pygame.transform.rotate(card.front_image, 90)
+                        card.front_image = pygame.transform.rotate(card.back_image, 90)
                         # Adjust the card's rect for the rotated image
                         card.rect = card.front_image.get_rect(center=card.rect.center)
                     if player == game.seat[2]:
-                        #card.front_image = card.back_image
+                        card.front_image = card.back_image
                         pass
 
                     # Move the card to its target position
@@ -454,7 +456,7 @@ def create_labels(game):
 
     player0_balance.draw(game.screen)
     player0_bet.draw(game.screen)
-    player0_hand.draw(game.screen)
+    if not game.seat[0].out: player0_hand.draw(game.screen)
     player1_balance.draw(game.screen)
     player1_bet.draw(game.screen)
     #player1_hand.draw(game.screen)
